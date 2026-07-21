@@ -157,14 +157,14 @@ export class CustomPlayer {
             <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#181236]/90 border border-purple-500/40 backdrop-blur-xl shadow-xl">
               <span class="text-[10px] font-black text-emerald-400 uppercase tracking-wider hidden sm:inline">Server:</span>
               <select id="player-server-select" class="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer">
-                <option value="1" class="bg-[#0e0a24] text-white">Server 1 (VidLink HD PRO - Primary)</option>
-                <option value="2" class="bg-[#0e0a24] text-white">Server 2 (VidSrc.me HD Stream)</option>
-                <option value="3" class="bg-[#0e0a24] text-white">Server 3 (EmbedSu 4K HD)</option>
-                <option value="4" class="bg-[#0e0a24] text-white">Server 4 (VidSrc CC HD)</option>
-                <option value="5" class="bg-[#0e0a24] text-white">Server 5 (AutoEmbed Fast)</option>
-                <option value="6" class="bg-[#0e0a24] text-white">Server 6 (2Embed HD Stream)</option>
-                <option value="7" class="bg-[#0e0a24] text-white">Server 7 (Official HD Feature / Trailer)</option>
-                <option value="8" class="bg-[#0e0a24] text-white">Server 8 (Cinestar HTML5 MP4 Player)</option>
+                <option value="1" class="bg-[#0e0a24] text-white">Server 1 (Cinestar HTML5 MP4 Player - Default)</option>
+                <option value="2" class="bg-[#0e0a24] text-white">Server 2 (VidLink HD PRO)</option>
+                <option value="3" class="bg-[#0e0a24] text-white">Server 3 (VidSrc.me HD Stream)</option>
+                <option value="4" class="bg-[#0e0a24] text-white">Server 4 (EmbedSu 4K HD)</option>
+                <option value="5" class="bg-[#0e0a24] text-white">Server 5 (VidSrc CC HD)</option>
+                <option value="6" class="bg-[#0e0a24] text-white">Server 6 (AutoEmbed Fast)</option>
+                <option value="7" class="bg-[#0e0a24] text-white">Server 7 (2Embed HD Stream)</option>
+                <option value="8" class="bg-[#0e0a24] text-white">Server 8 (Official HD Feature / Trailer)</option>
               </select>
             </div>
 
@@ -461,14 +461,43 @@ export class CustomPlayer {
     forwardBtn.addEventListener('click', () => { this.video.currentTime = Math.min(this.video.duration, this.video.currentTime + 10); });
 
     // Skip Intro & Credits
-    skipIntroBtn.addEventListener('click', () => {
-      if (this.mediaItem?.skip_intro) this.video.currentTime = this.mediaItem.skip_intro.end;
-      else this.video.currentTime += 80;
+    skipIntroBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.introSkipped = true;
+
+      if (this.mediaItem?.skip_intro) {
+        this.video.currentTime = this.mediaItem.skip_intro.end;
+      } else {
+        const targetTime = Math.max(92, this.video.currentTime + 85);
+        if (this.video.duration) {
+          this.video.currentTime = Math.min(this.video.duration - 5, targetTime);
+        } else {
+          this.video.currentTime = targetTime;
+        }
+      }
+
+      skipIntroBtn.classList.add('hidden');
+      skipIntroBtn.classList.remove('flex');
+
+      // Make other UI controls appear and then auto-disappear
+      this.resetControlsTimer();
     });
 
-    skipCreditsBtn.addEventListener('click', () => {
-      if (this.mediaItem?.skip_credits) this.video.currentTime = this.mediaItem.skip_credits.end;
-      else this.onEnded();
+    skipCreditsBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.creditsSkipped = true;
+
+      if (this.mediaItem?.skip_credits) {
+        this.video.currentTime = this.mediaItem.skip_credits.end;
+      } else {
+        this.onEnded();
+      }
+
+      skipCreditsBtn.classList.add('hidden');
+      skipCreditsBtn.classList.remove('flex');
+
+      // Make other UI controls appear and then auto-disappear
+      this.resetControlsTimer();
     });
 
     // Playback Speed Options
@@ -523,38 +552,38 @@ export class CustomPlayer {
     const trailerKey = mediaItem.trailer_key || 'uYPbbksJxIg';
 
     switch (Number(serverIndex)) {
-      case 1:
-        // VidLink HD PRO (Clean Dark Purple/Emerald Theme)
+      case 2:
+        // Server 2: VidLink HD PRO
         return type === 'tv'
           ? `https://vidlink.pro/tv/${id}/${s}/${e}?primaryColor=a855f7&secondaryColor=10b981&iconColor=ffffff&autoplay=true`
           : `https://vidlink.pro/movie/${id}?primaryColor=a855f7&secondaryColor=10b981&iconColor=ffffff&autoplay=true`;
-      case 2:
-        // VidSrc.me (Official VidSrc Engine)
+      case 3:
+        // Server 3: VidSrc.me HD Stream
         return type === 'tv'
           ? `https://vidsrc.me/embed/tv?tmdb=${id}&season=${s}&episode=${e}`
           : `https://vidsrc.me/embed/movie?tmdb=${id}`;
-      case 3:
-        // EmbedSu 4K HD
+      case 4:
+        // Server 4: EmbedSu 4K HD
         return type === 'tv'
           ? `https://embed.su/embed/tv/${id}/${s}/${e}`
           : `https://embed.su/embed/movie/${id}`;
-      case 4:
-        // VidSrc CC HD
+      case 5:
+        // Server 5: VidSrc CC HD
         return type === 'tv'
           ? `https://vidsrc.cc/v2/embed/tv/${id}/${s}/${e}`
           : `https://vidsrc.cc/v2/embed/movie/${id}`;
-      case 5:
-        // AutoEmbed Stream
+      case 6:
+        // Server 6: AutoEmbed Fast
         return type === 'tv'
           ? `https://player.autoembed.cc/embed/tv/${id}/${s}/${e}`
           : `https://player.autoembed.cc/embed/movie/${id}`;
-      case 6:
-        // 2Embed HD Stream
+      case 7:
+        // Server 7: 2Embed HD Stream
         return type === 'tv'
           ? `https://www.2embed.cc/embedtv/${id}&s=${s}&e=${e}`
           : `https://www.2embed.cc/embed/${id}`;
-      case 7:
-        // Official YouTube Feature / Trailer HD
+      case 8:
+        // Server 8: Official YouTube Feature / Trailer HD
         return `https://www.youtube.com/embed/${trailerKey}?autoplay=1&controls=1&modestbranding=1&rel=0&enablejsapi=1`;
       default:
         return null;
@@ -635,6 +664,8 @@ export class CustomPlayer {
 
     this.mediaItem = mediaItem;
     this.currentServer = 1;
+    this.introSkipped = false;
+    this.creditsSkipped = false;
 
     // Title setup
     const titleEl = this.wrapper.querySelector('#player-media-title');
@@ -669,32 +700,8 @@ export class CustomPlayer {
 
     this.toggleLoading(true);
 
-    // Servers 1 - 7: High-Definition Embedded Video Streams (VidLink, VidSrc, EmbedSu, VidSrc CC, AutoEmbed, 2Embed, YouTube)
-    if (this.currentServer >= 1 && this.currentServer <= 7) {
-      const embedUrl = this.getEmbedUrl(this.currentServer, this.mediaItem);
-      if (embedUrl) {
-        if (iframe) {
-          if (iframe.src !== embedUrl) {
-            iframe.src = embedUrl;
-          }
-        }
-
-        if (iframeWrapper) iframeWrapper.classList.remove('hidden');
-        if (mainVideo) {
-          mainVideo.pause();
-          mainVideo.classList.add('hidden');
-        }
-        // Hide Cinestar's bottom control bar when using embedded players to prevent duplicate control bars
-        if (bottomBar) bottomBar.classList.add('hidden');
-
-        // Safety fallback timer to hide spinner
-        setTimeout(() => this.toggleLoading(false), 600);
-        return;
-      }
-    }
-
-    // Server 8: Native Cinestar Custom HTML5 MP4 Player with custom bottom control bar
-    if (this.currentServer === 8) {
+    // Server 1: Native Cinestar Custom HTML5 MP4 Player with custom bottom control bar
+    if (this.currentServer === 1) {
       if (iframeWrapper) iframeWrapper.classList.add('hidden');
       if (iframe) iframe.src = '';
 
@@ -704,13 +711,23 @@ export class CustomPlayer {
 
         const fallbackStreams = [
           'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyplays.mp4',
+          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
+          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreet.mp4',
+          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
+          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4',
           'https://vjs.zencdn.net/v/oceans.mp4',
           'https://media.w3.org/2010/05/sintel/trailer.mp4',
-          'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
-          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4'
+          'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4'
         ];
 
-        const streamIndex = Math.abs(this.mediaItem?.id || 0) % fallbackStreams.length;
+        const idNum = Math.abs(this.mediaItem?.id || 0) + (this.mediaItem?.season || 0) * 10 + (this.mediaItem?.episode || 0);
+        const streamIndex = idNum % fallbackStreams.length;
         const streamUrl = this.mediaItem?.stream_url || fallbackStreams[streamIndex];
 
         mainVideo.src = streamUrl;
@@ -733,6 +750,30 @@ export class CustomPlayer {
             this.handleStreamError();
           });
         });
+        return;
+      }
+    }
+
+    // Servers 2 - 8: High-Definition Embedded Video Streams (VidLink, VidSrc, EmbedSu, VidSrc CC, AutoEmbed, 2Embed, YouTube)
+    if (this.currentServer >= 2 && this.currentServer <= 8) {
+      const embedUrl = this.getEmbedUrl(this.currentServer, this.mediaItem);
+      if (embedUrl) {
+        if (iframe) {
+          if (iframe.src !== embedUrl) {
+            iframe.src = embedUrl;
+          }
+        }
+
+        if (iframeWrapper) iframeWrapper.classList.remove('hidden');
+        if (mainVideo) {
+          mainVideo.pause();
+          mainVideo.classList.add('hidden');
+        }
+        // Hide Cinestar's bottom control bar when using embedded players to prevent duplicate control bars
+        if (bottomBar) bottomBar.classList.add('hidden');
+
+        // Safety fallback timer to hide spinner
+        setTimeout(() => this.toggleLoading(false), 600);
         return;
       }
     }
@@ -984,35 +1025,29 @@ export class CustomPlayer {
     const viewport = this.wrapper.querySelector('#player-viewport');
 
     if (topBar) {
-      topBar.classList.remove('opacity-0');
+      topBar.classList.remove('opacity-0', 'pointer-events-none');
       topBar.classList.add('opacity-100');
     }
 
-    if (this.currentServer === 8) {
+    if (this.currentServer === 1) {
       if (bottomBar) {
         bottomBar.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
         bottomBar.classList.add('opacity-100');
       }
       if (viewport) viewport.style.cursor = 'default';
-    } else {
-      if (bottomBar) bottomBar.classList.add('hidden');
-      if (viewport) viewport.style.cursor = 'default';
-    }
 
-    clearTimeout(this.hideControlsTimer);
-    this.hideControlsTimer = setTimeout(() => {
-      if (topBar) {
-        topBar.classList.remove('opacity-100');
-        topBar.classList.add('opacity-0');
-      }
-      if (this.currentServer === 8) {
+      clearTimeout(this.hideControlsTimer);
+      this.hideControlsTimer = setTimeout(() => {
         if (bottomBar) {
           bottomBar.classList.remove('opacity-100');
           bottomBar.classList.add('opacity-0', 'pointer-events-none');
         }
         if (viewport) viewport.style.cursor = 'none';
-      }
-    }, 3500);
+      }, 3500);
+    } else {
+      if (bottomBar) bottomBar.classList.add('hidden');
+      if (viewport) viewport.style.cursor = 'default';
+    }
   }
 
   /**

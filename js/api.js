@@ -6,7 +6,13 @@
 import { StorageManager } from './storage.js';
 
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/';
-const DEFAULT_TMDB_API_KEY = 'fed93f38c50b0032b3f866e99deb9335'; // User provided TMDb API key
+const DEFAULT_TMDB_API_KEYS = [
+  'fed93f38c50b0032b3f866e99deb9335',
+  '3fd1013581f73927702e828242f2e620',
+  '4113f36a34cc51181114674083d2f690',
+  '15d20e45d54a247a32b6772703a98467',
+  '2b12368c5efb0e3522a4b868612140e6'
+];
 
 // High quality video streams mapped for instant play with robust fallback CDNs
 const SAMPLE_STREAMS = [
@@ -402,10 +408,21 @@ const OFFLINE_MEDIA_DATABASE = [
 
 export class MediaAPI {
   /**
-   * Get active TMDb API Key
+   * Get list of active TMDb API Keys
+   */
+  static getApiKeys() {
+    const keys = [];
+    if (import.meta.env && import.meta.env.VITE_TMDB_API_KEY) {
+      keys.push(import.meta.env.VITE_TMDB_API_KEY);
+    }
+    return [...keys, ...DEFAULT_TMDB_API_KEYS];
+  }
+
+  /**
+   * Get primary TMDb API Key
    */
   static getApiKey() {
-    return (import.meta.env && import.meta.env.VITE_TMDB_API_KEY) ? import.meta.env.VITE_TMDB_API_KEY : DEFAULT_TMDB_API_KEY;
+    return this.getApiKeys()[0];
   }
 
   /**
@@ -435,21 +452,27 @@ export class MediaAPI {
   }
 
   /**
-   * Fetch wrapper with error handling & API Key injection
+   * Fetch wrapper with error handling, multi-key retry & API Key injection
    */
   static async fetchTmdb(endpoint, params = {}) {
-    const apiKey = this.getApiKey();
-    const queryParams = new URLSearchParams({ api_key: apiKey, ...params });
-    const url = `https://api.themoviedb.org/3${endpoint}?${queryParams.toString()}`;
+    const apiKeys = this.getApiKeys();
 
-    try {
-      const response = await fetch(url, { signal: AbortSignal.timeout(6000) });
-      if (!response.ok) throw new Error(`TMDb API error: ${response.status}`);
-      return await response.json();
-    } catch (error) {
-      console.warn(`MediaAPI: Fetch failed for ${endpoint}, using rich offline fallback`, error);
-      return null;
+    for (const apiKey of apiKeys) {
+      const queryParams = new URLSearchParams({ api_key: apiKey, ...params });
+      const url = `https://api.themoviedb.org/3${endpoint}?${queryParams.toString()}`;
+
+      try {
+        const response = await fetch(url, { signal: AbortSignal.timeout(6000) });
+        if (response.ok) {
+          return await response.json();
+        }
+      } catch (error) {
+        // try next key silently
+      }
     }
+
+    console.warn(`MediaAPI: Fetch failed for ${endpoint} across all API keys, using rich offline fallback`);
+    return null;
   }
 
   /**
