@@ -6,7 +6,7 @@
 import { StorageManager } from './storage.js';
 
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/';
-const DEFAULT_TMDB_API_KEY = '4502d99d3e813f5d5e2373078a1f8bb0'; // Public TMDb demo read key
+const DEFAULT_TMDB_API_KEY = 'fed93f38c50b0032b3f866e99deb9335'; // User provided TMDb API key
 
 // High quality video streams mapped for instant play
 const SAMPLE_STREAMS = [
@@ -405,7 +405,7 @@ export class MediaAPI {
    * Get active TMDb API Key
    */
   static getApiKey() {
-    return DEFAULT_TMDB_API_KEY;
+    return (import.meta.env && import.meta.env.VITE_TMDB_API_KEY) ? import.meta.env.VITE_TMDB_API_KEY : DEFAULT_TMDB_API_KEY;
   }
 
   /**
