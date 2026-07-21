@@ -52,8 +52,13 @@ export class CustomPlayer {
 
     this.wrapper.innerHTML = `
       <div class="relative w-full h-full flex flex-col justify-between overflow-hidden group/player" id="player-viewport">
+        <!-- Embed Stream Iframe Container -->
+        <div id="embed-iframe-wrapper" class="absolute inset-0 w-full h-full bg-black z-10 flex items-center justify-center">
+          <iframe id="embed-iframe-element" class="w-full h-full border-0" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe>
+        </div>
+
         <!-- Video Element -->
-        <video id="main-video-element" class="w-full h-full object-contain cursor-pointer" playsinline></video>
+        <video id="main-video-element" class="w-full h-full object-contain cursor-pointer hidden z-0" playsinline></video>
 
         <!-- Stream Error Overlay -->
         <div id="player-error-overlay" class="hidden absolute inset-0 bg-[#080612]/95 backdrop-blur-2xl z-40 flex flex-col items-center justify-center text-center p-6">
@@ -116,7 +121,7 @@ export class CustomPlayer {
           </div>
         </div>
 
-        <!-- Top Control Bar (Title, Season, Brand Badge, PiP, Close) -->
+        <!-- Top Control Bar (Title, Season, Brand Badge, Server Selector, PiP, Close) -->
         <div id="player-top-bar" class="absolute top-0 left-0 right-0 p-6 flex items-center justify-between bg-gradient-to-b from-[#080612]/95 via-[#080612]/60 to-transparent transition-opacity duration-300 z-30">
           <div class="flex items-center gap-4">
             <button id="player-back-btn" class="p-2.5 rounded-full bg-[#181236]/80 hover:bg-purple-900/60 text-white border border-purple-500/30 backdrop-blur-xl transition-all hover:scale-105" title="Go Back">
@@ -133,6 +138,19 @@ export class CustomPlayer {
           </div>
 
           <div class="flex items-center gap-3">
+            <!-- Server Selector Dropdown -->
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#181236]/90 border border-purple-500/40 backdrop-blur-xl shadow-xl">
+              <span class="text-[10px] font-black text-emerald-400 uppercase tracking-wider hidden sm:inline">Server:</span>
+              <select id="player-server-select" class="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer">
+                <option value="1" class="bg-[#0e0a24] text-white">Server 1 (VidSrc PRO)</option>
+                <option value="2" class="bg-[#0e0a24] text-white">Server 2 (VidLink HD)</option>
+                <option value="3" class="bg-[#0e0a24] text-white">Server 3 (EmbedSu 4K)</option>
+                <option value="4" class="bg-[#0e0a24] text-white">Server 4 (AutoEmbed)</option>
+                <option value="5" class="bg-[#0e0a24] text-white">Server 5 (2Embed)</option>
+                <option value="6" class="bg-[#0e0a24] text-white">Server 6 (HTML5 Video)</option>
+              </select>
+            </div>
+
             <button id="player-pip-btn" title="Picture in Picture" class="p-2.5 rounded-full bg-[#181236]/80 hover:bg-purple-900/60 text-slate-300 hover:text-white border border-purple-500/30 backdrop-blur-xl transition-all">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
             </button>
@@ -286,6 +304,13 @@ export class CustomPlayer {
       this.handleStreamError();
     });
 
+    const serverSelect = this.wrapper.querySelector('#player-server-select');
+    if (serverSelect) {
+      serverSelect.addEventListener('change', (e) => {
+        this.switchServer(e.target.value);
+      });
+    }
+
     const errorOverlay = this.wrapper.querySelector('#player-error-overlay');
     const retryStreamBtn = this.wrapper.querySelector('#player-retry-stream-btn');
     const watchTrailerBtn = this.wrapper.querySelector('#player-watch-trailer-btn');
@@ -294,7 +319,8 @@ export class CustomPlayer {
     if (retryStreamBtn) {
       retryStreamBtn.addEventListener('click', () => {
         errorOverlay.classList.add('hidden');
-        this.handleStreamError();
+        const nextServer = ((this.currentServer || 1) % 6) + 1;
+        this.switchServer(nextServer);
       });
     }
 
@@ -415,11 +441,48 @@ export class CustomPlayer {
   }
 
   /**
+   * Construct embed streaming URL for various high-definition sources
+   */
+  getEmbedUrl(serverIndex, mediaItem) {
+    if (!mediaItem) return null;
+    const type = mediaItem.type === 'tv' ? 'tv' : 'movie';
+    const id = mediaItem.id || mediaItem.tmdb_id || 157336;
+    const s = mediaItem.season || 1;
+    const e = mediaItem.episode || 1;
+
+    switch (Number(serverIndex)) {
+      case 1:
+        return type === 'tv'
+          ? `https://vidsrc.me/embed/tv?tmdb=${id}&season=${s}&episode=${e}`
+          : `https://vidsrc.me/embed/movie?tmdb=${id}`;
+      case 2:
+        return type === 'tv'
+          ? `https://vidlink.pro/tv/${id}/${s}/${e}`
+          : `https://vidlink.pro/movie/${id}`;
+      case 3:
+        return type === 'tv'
+          ? `https://embed.su/embed/tv/${id}/${s}/${e}`
+          : `https://embed.su/embed/movie/${id}`;
+      case 4:
+        return type === 'tv'
+          ? `https://player.autoembed.cc/embed/tv/${id}/${s}/${e}`
+          : `https://player.autoembed.cc/embed/movie/${id}`;
+      case 5:
+        return type === 'tv'
+          ? `https://www.2embed.cc/embedtv/${id}&s=${s}&e=${e}`
+          : `https://www.2embed.cc/embed/${id}`;
+      default:
+        return null;
+    }
+  }
+
+  /**
    * Load and play a media item
    */
   loadMedia(mediaItem, resumeTime = 0) {
     this.mediaItem = mediaItem;
-    this.fallbackIndex = 0;
+    this.currentServer = 1;
+
     const errorOverlay = this.wrapper.querySelector('#player-error-overlay');
     if (errorOverlay) errorOverlay.classList.add('hidden');
 
@@ -432,59 +495,96 @@ export class CustomPlayer {
     const badgeEl = this.wrapper.querySelector('#player-badge');
 
     if (badgeEl) badgeEl.textContent = mediaItem.badge || (mediaItem.type === 'tv' ? 'SERIES' : 'HBO ORIGINAL');
-    titleEl.textContent = mediaItem.title || mediaItem.name || 'Cinestar Media';
+    if (titleEl) titleEl.textContent = mediaItem.title || mediaItem.name || 'Cinestar Media';
 
     if (mediaItem.season && mediaItem.episode) {
-      subtitleEl.textContent = `Season ${mediaItem.season} • Episode ${mediaItem.episode} — ${mediaItem.episodeTitle || `Episode ${mediaItem.episode}`}`;
+      if (subtitleEl) subtitleEl.textContent = `Season ${mediaItem.season} • Episode ${mediaItem.episode} — ${mediaItem.episodeTitle || `Episode ${mediaItem.episode}`}`;
     } else {
-      subtitleEl.textContent = `${mediaItem.year || '2024'} • ${mediaItem.genres ? mediaItem.genres.map(g => g.name || g).join(', ') : 'Feature'}`;
+      if (subtitleEl) subtitleEl.textContent = `${mediaItem.year || '2024'} • ${mediaItem.genres ? mediaItem.genres.map(g => g.name || g).join(', ') : 'Feature'}`;
     }
 
-    // Video src
-    const fallbackStreams = [
-      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-      'https://vjs.zencdn.net/v/oceans.mp4',
-      'https://media.w3.org/2010/05/sintel/trailer.mp4',
-      'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
-      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4'
-    ];
+    const serverSelect = this.wrapper.querySelector('#player-server-select');
+    if (serverSelect) serverSelect.value = '1';
 
-    const streamUrl = mediaItem.stream_url || fallbackStreams[0];
-    this.video.src = streamUrl;
-    this.video.load();
+    this.playServer(1);
+    this.resetControlsTimer();
+  }
 
-    // Saved volume preference
-    const settings = StorageManager.getSettings();
-    this.video.volume = settings.volume || 0.8;
-    this.video.playbackRate = 1.0;
-
-    // Resume time setup
-    if (resumeTime > 5) {
-      this.video.currentTime = resumeTime;
-    }
+  /**
+   * Play stream using selected server
+   */
+  playServer(serverIndex) {
+    this.currentServer = Number(serverIndex);
+    const iframeWrapper = this.wrapper.querySelector('#embed-iframe-wrapper');
+    const iframe = this.wrapper.querySelector('#embed-iframe-element');
+    const mainVideo = this.video;
+    const bottomBar = this.wrapper.querySelector('#player-bottom-bar');
 
     this.toggleLoading(true);
 
-    const tryPlay = () => {
-      this.video.play().then(() => {
+    if (this.currentServer >= 1 && this.currentServer <= 5) {
+      const embedUrl = this.getEmbedUrl(this.currentServer, this.mediaItem);
+      if (embedUrl) {
+        if (iframe) iframe.src = embedUrl;
+        if (iframeWrapper) iframeWrapper.classList.remove('hidden');
+        if (mainVideo) {
+          mainVideo.pause();
+          mainVideo.classList.add('hidden');
+        }
+        if (bottomBar) bottomBar.classList.add('hidden');
+
+        setTimeout(() => this.toggleLoading(false), 1200);
+        return;
+      }
+    }
+
+    // Server 6: HTML5 Video Mode
+    if (iframeWrapper) iframeWrapper.classList.add('hidden');
+    if (iframe) iframe.src = '';
+    if (mainVideo) {
+      mainVideo.classList.remove('hidden');
+      if (bottomBar) bottomBar.classList.remove('hidden');
+
+      const fallbackStreams = [
+        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+        'https://vjs.zencdn.net/v/oceans.mp4',
+        'https://media.w3.org/2010/05/sintel/trailer.mp4',
+        'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4'
+      ];
+
+      const streamUrl = this.mediaItem?.stream_url || fallbackStreams[0];
+      mainVideo.src = streamUrl;
+      mainVideo.load();
+
+      const settings = StorageManager.getSettings();
+      mainVideo.volume = settings.volume || 0.8;
+      mainVideo.playbackRate = 1.0;
+
+      mainVideo.play().then(() => {
         this.toggleLoading(false);
         this.updatePlayPauseIcons(true);
-      }).catch(err => {
-        console.warn('Unmuted autoplay prevented by browser. Trying muted autoplay...', err);
-        this.video.muted = true;
-        this.updateVolumeIcons();
-        this.video.play().then(() => {
+      }).catch(() => {
+        mainVideo.muted = true;
+        mainVideo.play().then(() => {
           this.toggleLoading(false);
           this.updatePlayPauseIcons(true);
-        }).catch(err2 => {
-          console.warn('Muted autoplay also rejected, executing handleStreamError...', err2);
+        }).catch(() => {
           this.handleStreamError();
         });
       });
-    };
+    }
+  }
 
-    tryPlay();
-    this.resetControlsTimer();
+  /**
+   * Switch player server
+   */
+  switchServer(serverIndex) {
+    const errorOverlay = this.wrapper.querySelector('#player-error-overlay');
+    if (errorOverlay) errorOverlay.classList.add('hidden');
+    const serverSelect = this.wrapper.querySelector('#player-server-select');
+    if (serverSelect) serverSelect.value = String(serverIndex);
+    this.playServer(serverIndex);
   }
 
   /**
@@ -772,35 +872,11 @@ export class CustomPlayer {
    */
   handleStreamError() {
     this.toggleLoading(false);
-    const fallbackStreams = [
-      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-      'https://vjs.zencdn.net/v/oceans.mp4',
-      'https://media.w3.org/2010/05/sintel/trailer.mp4',
-      'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
-      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4'
-    ];
-
-    this.fallbackIndex = (this.fallbackIndex || 0) + 1;
-
-    if (this.fallbackIndex < fallbackStreams.length) {
-      const nextStream = fallbackStreams[this.fallbackIndex];
-      console.warn(`Primary stream failed. Attempting backup stream #${this.fallbackIndex}: ${nextStream}`);
-      this.video.src = nextStream;
-      this.video.load();
-      this.video.play().then(() => {
-        this.toggleLoading(false);
-        this.updatePlayPauseIcons(true);
-      }).catch(() => {
-        this.video.muted = true;
-        this.video.play().then(() => {
-          this.toggleLoading(false);
-          this.updatePlayPauseIcons(true);
-        }).catch(() => {
-          this.handleStreamError();
-        });
-      });
+    const nextServer = ((this.currentServer || 1) % 6) + 1;
+    if (nextServer !== 1) {
+      this.switchServer(nextServer);
     } else {
-      this.showErrorOverlay('Unable to load video stream from current server. You can switch servers or watch the official HD trailer below.');
+      this.showErrorOverlay('Unable to load video stream from current server. You can switch servers using the dropdown above or watch the official HD trailer below.');
     }
   }
 
@@ -818,6 +894,9 @@ export class CustomPlayer {
    * Close video player
    */
   close() {
+    const iframe = this.wrapper.querySelector('#embed-iframe-element');
+    if (iframe) iframe.src = '';
+
     if (this.video) {
       if (this.mediaItem && this.video.currentTime > 2) {
         StorageManager.updateProgress(this.mediaItem, this.video.currentTime, this.video.duration || 100);
