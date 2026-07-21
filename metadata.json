@@ -1,0 +1,6 @@
+{
+  "name": "Personal Media Application",
+  "description": "A production-quality personal media streaming application with TMDb metadata integration, custom HTML5 video player, watch history, watchlist, search, and cinematic UI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

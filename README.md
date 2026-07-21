@@ -1,11 +1,13 @@
-<div align="center">
+# Cinestar — Personal Media Application
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+A production-quality personal media streaming application built with **pure HTML5, CSS3, and Vanilla JavaScript (ES6+)**.
 
-  <h1>Built with AI Studio</h2>
+## Features
 
-  <p>The fastest path from prompt to production with Gemini.</p>
-
-  <a href="https://aistudio.google.com/apps">Start building</a>
-
-</div>
+- **Cinematic Dark Theme**: Glassmorphism UI, ambient backdrops, dynamic gradients, and smooth card hover animations.
+- **TMDb Integration & Metadata System**: Full TMDb API v3 client with IMDb ID support, TMDb ID search, local caching, and offline fallback dataset with popular movies and TV series.
+- **Custom HTML5 Video Player**: Custom controls with glass design, timeline hover preview tooltip, buffer indicators, audio/subtitle selection, skip intro & credits buttons, up-next episode countdown overlay, playback speed menu, picture-in-picture, and fullscreen mode.
+- **Continue Watching & Progress Sync**: Automatically tracks video timestamp progress and saves watch history in LocalStorage for seamless resuming.
+- **Search & Discovery Engine**: Live multi-field search (title, IMDb ID, actor, director, genre, year) with filters and sorting.
+- **Watchlist & Favorites**: Save bookmarked movies and TV series locally.
+- **TV Series Browser**: Season picker with episode thumbnails, descriptions, runtimes, and direct play support.

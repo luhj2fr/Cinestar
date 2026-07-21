@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cinestar — Personal Streaming</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body class="bg-[#080612] text-slate-100 min-h-screen flex flex-col font-sans selection:bg-purple-600 selection:text-white">
+
+  <!-- Main Navigation Bar (Hulu & Max Inspired Glass Nav) -->
+  <nav id="main-navbar" class="fixed top-0 left-0 right-0 z-40 transition-all duration-300 px-4 md:px-10 py-3.5 flex items-center justify-between glass-nav">
+    <div class="flex items-center gap-8">
+      <!-- App Logo -->
+      <a href="#" data-view-target="home" class="flex items-center gap-2.5 group">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 via-fuchsia-500 to-emerald-400 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-purple-600/30 group-hover:scale-105 transition-transform">
+          ★
+        </div>
+        <span class="text-xl font-black tracking-widest text-white">CINE<span class="bg-gradient-to-r from-purple-400 via-fuchsia-400 to-emerald-400 bg-clip-text text-transparent">STAR</span></span>
+      </a>
+
+      <!-- Desktop Navigation Links -->
+      <div class="hidden md:flex items-center gap-1.5 bg-[#120e24]/80 p-1.5 rounded-full border border-purple-500/20 backdrop-blur-xl shadow-inner">
+        <button data-view-target="home" class="px-5 py-1.5 rounded-full text-xs font-bold transition-all text-white bg-purple-600/80 shadow-md shadow-purple-600/30">Home</button>
+        <button data-view-target="movies" class="px-5 py-1.5 rounded-full text-xs font-bold transition-all text-slate-300 hover:text-white hover:bg-white/10">Movies</button>
+        <button data-view-target="tv" class="px-5 py-1.5 rounded-full text-xs font-bold transition-all text-slate-300 hover:text-white hover:bg-white/10">TV Series</button>
+        <button data-view-target="watchlist" class="px-5 py-1.5 rounded-full text-xs font-bold transition-all text-slate-300 hover:text-white hover:bg-white/10">My Stuff</button>
+        <button data-view-target="favorites" class="px-5 py-1.5 rounded-full text-xs font-bold transition-all text-slate-300 hover:text-white hover:bg-white/10">Favorites</button>
+      </div>
+    </div>
+
+    <!-- Right Controls: Quick Search Input & Settings -->
+    <div class="flex items-center gap-3">
+      <div class="relative hidden sm:block">
+        <input id="global-search-input" type="text" placeholder="Search TMDb, IMDb, titles... (⌘K)" class="w-60 md:w-72 px-4 py-2 pl-9 pr-12 text-xs rounded-full bg-[#16112e]/90 border border-purple-500/30 text-white placeholder-slate-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/30 transition-all shadow-inner">
+        <svg class="w-4 h-4 text-purple-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      </div>
+
+      <button data-view-target="search" class="p-2.5 rounded-full bg-[#16112e]/90 hover:bg-purple-900/40 border border-purple-500/30 text-slate-300 hover:text-white transition-colors" title="Search">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      </button>
+
+      <button data-view-target="settings" class="p-2.5 rounded-full bg-[#16112e]/90 hover:bg-purple-900/40 border border-purple-500/30 text-slate-300 hover:text-white transition-colors" title="Settings">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- APP VIEW CONTAINERS -->
+
+  <!-- 1. HOME VIEW -->
+  <main id="view-home" class="app-view-container flex-1">
+    
+    <!-- Hero Spotlight Banner -->
+    <section class="relative w-full h-[78vh] md:h-[88vh] flex items-end overflow-hidden">
+      <!-- Background Backdrop Image -->
+      <img id="hero-backdrop-img" src="https://image.tmdb.org/t/p/original/2OMB0yKqA2A9P3y8O3fB3f.jpg" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000">
+      <div class="absolute inset-0 hero-vignette"></div>
+
+      <!-- Hero Content -->
+      <div class="relative z-20 px-6 md:px-12 pb-16 max-w-3xl">
+        <div class="flex flex-wrap items-center gap-2.5 mb-3">
+          <span id="hero-badge" class="px-3 py-1 rounded-md bg-purple-600/90 text-white border border-purple-400/50 text-[11px] font-black uppercase tracking-wider shadow-lg">HBO ORIGINAL</span>
+          <span id="hero-match-score" class="px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-xs font-bold border border-emerald-500/30">99% Match</span>
+          <span id="hero-age-rating" class="px-2 py-0.5 rounded bg-slate-800/80 text-slate-300 text-xs font-bold border border-slate-700">TV-MA</span>
+          <span id="hero-quality" class="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-xs font-bold border border-purple-500/30">4K ULTRA HD</span>
+          <span id="hero-year" class="text-xs text-slate-300 font-bold">2011</span>
+        </div>
+
+        <h1 id="hero-title" class="text-4xl md:text-6xl lg:text-7xl font-black text-white tracking-tight mb-3 drop-shadow-2xl">Game of Thrones</h1>
+        
+        <p id="hero-tagline" class="text-sm md:text-base font-bold text-emerald-400 mb-2 italic">Winter is coming.</p>
+        <p id="hero-genres" class="text-xs md:text-sm font-semibold text-purple-300 mb-3">Sci-Fi & Fantasy • Drama • Action & Adventure</p>
+        
+        <p id="hero-overview" class="text-xs md:text-sm text-slate-300 line-clamp-3 mb-6 max-w-2xl leading-relaxed drop-shadow">Seven noble families fight for control of the mythical land of Westeros while an ancient evil awakens in the far north.</p>
+
+        <div class="flex flex-wrap items-center gap-4">
+          <button id="hero-play-btn" class="btn-neon-primary px-8 py-3.5 rounded-full bg-gradient-to-r from-purple-600 via-fuchsia-600 to-emerald-500 hover:from-purple-500 hover:to-emerald-400 text-white font-black text-sm flex items-center gap-2.5 shadow-2xl transition-transform hover:scale-105 active:scale-95">
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            Watch Now
+          </button>
+
+          <button id="hero-info-btn" class="px-6 py-3.5 rounded-full bg-[#16112e]/90 hover:bg-purple-900/60 text-white font-bold text-sm flex items-center gap-2 border border-purple-500/30 backdrop-blur-xl transition-transform hover:scale-105">
+            <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Details & Episodes
+          </button>
+
+          <button id="hero-watchlist-btn" class="p-3.5 rounded-full bg-[#16112e]/90 hover:bg-purple-900/60 text-white border border-purple-500/30 backdrop-blur-xl transition-transform hover:scale-105" title="Add to My Stuff">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Content Sections & Brand Hubs Row -->
+    <div class="px-4 md:px-12 -mt-10 relative z-30 flex flex-col gap-10 pb-20">
+
+      <!-- Hulu / Max Brand Hubs Row -->
+      <section>
+        <h3 class="text-sm font-black tracking-widest text-purple-400/90 uppercase mb-3 flex items-center gap-2">
+          <span>Explore Brand Studios</span>
+        </h3>
+        <div id="brand-hubs-container" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3"></div>
+      </section>
+
+      <!-- Continue Watching Row -->
+      <section id="continue-watching-section" class="hidden">
+        <h3 class="text-lg md:text-xl font-black text-white mb-4 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-md shadow-emerald-400/50"></span> Continue Watching
+        </h3>
+        <div id="continue-watching-container" class="flex gap-4 overflow-x-auto no-scrollbar py-2"></div>
+      </section>
+
+      <!-- Trending Now Row -->
+      <section class="row-scroll-container group/row relative">
+        <div class="flex items-center justify-between mb-4">
+          <h3 id="trending-row-title" class="text-lg md:text-xl font-black text-white">Trending on Max & Hulu</h3>
+          <div class="flex items-center gap-2">
+            <button class="scroll-left-btn p-2 rounded-full bg-[#120e24] border border-purple-500/20 text-slate-300 hover:text-white hover:border-purple-500 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            </button>
+            <button class="scroll-right-btn p-2 rounded-full bg-[#120e24] border border-purple-500/20 text-slate-300 hover:text-white hover:border-purple-500 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+        <div id="trending-row-container" class="row-scroll-content flex gap-4 overflow-x-auto no-scrollbar py-2 scroll-smooth"></div>
+      </section>
+
+      <!-- Popular Movies -->
+      <section class="row-scroll-container group/row relative">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg md:text-xl font-black text-white">Top Blockbuster Movies</h3>
+          <div class="flex items-center gap-2">
+            <button class="scroll-left-btn p-2 rounded-full bg-[#120e24] border border-purple-500/20 text-slate-300 hover:text-white hover:border-purple-500 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            </button>
+            <button class="scroll-right-btn p-2 rounded-full bg-[#120e24] border border-purple-500/20 text-slate-300 hover:text-white hover:border-purple-500 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+        <div id="popular-movies-container" class="row-scroll-content flex gap-4 overflow-x-auto no-scrollbar py-2 scroll-smooth"></div>
+      </section>
+
+      <!-- Popular TV Series -->
+      <section class="row-scroll-container group/row relative">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg md:text-xl font-black text-white">Popular TV Series</h3>
+          <div class="flex items-center gap-2">
+            <button class="scroll-left-btn p-2 rounded-full bg-[#120e24] border border-purple-500/20 text-slate-300 hover:text-white hover:border-purple-500 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            </button>
+            <button class="scroll-right-btn p-2 rounded-full bg-[#120e24] border border-purple-500/20 text-slate-300 hover:text-white hover:border-purple-500 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+        <div id="popular-tv-container" class="row-scroll-content flex gap-4 overflow-x-auto no-scrollbar py-2 scroll-smooth"></div>
+      </section>
+
+      <!-- Top Rated Masterpieces -->
+      <section class="row-scroll-container group/row relative">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg md:text-xl font-black text-white">Highest Rated Masterpieces</h3>
+        </div>
+        <div id="top-rated-container" class="row-scroll-content flex gap-4 overflow-x-auto no-scrollbar py-2 scroll-smooth"></div>
+      </section>
+
+      <!-- New Releases -->
+      <section class="row-scroll-container group/row relative">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg md:text-xl font-black text-white">New Releases & Upcoming</h3>
+        </div>
+        <div id="upcoming-container" class="row-scroll-content flex gap-4 overflow-x-auto no-scrollbar py-2 scroll-smooth"></div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- 2. MOVIES VIEW -->
+  <main id="view-movies" class="app-view-container hidden pt-24 px-4 md:px-12 pb-20">
+    <h2 class="text-2xl font-black text-white mb-6 flex items-center gap-3">
+      <span>Blockbuster Movies</span>
+      <span class="text-xs px-2.5 py-1 rounded-full bg-purple-600/30 text-purple-300 border border-purple-500/30">TMDb Verified</span>
+    </h2>
+    <div id="movies-grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6"></div>
+  </main>
+
+  <!-- 3. TV SHOWS VIEW -->
+  <main id="view-tv" class="app-view-container hidden pt-24 px-4 md:px-12 pb-20">
+    <h2 class="text-2xl font-black text-white mb-6 flex items-center gap-3">
+      <span>TV Series Hub</span>
+      <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Full Episode Guides</span>
+    </h2>
+    <div id="tv-grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6"></div>
+  </main>
+
+  <!-- 4. SEARCH & DISCOVERY VIEW -->
+  <main id="view-search" class="app-view-container hidden pt-24 px-4 md:px-12 pb-20">
+    <!-- Hero Search Header Bar -->
+    <div class="max-w-4xl mx-auto mb-8">
+      <div class="relative mb-4">
+        <input id="main-search-input" type="text" placeholder="Search Movies, TV Shows, Actors, Directors, Genres, TMDb & IMDb IDs..." class="w-full px-6 py-4 pl-14 pr-12 text-sm md:text-base font-semibold rounded-2xl bg-[#16112e]/90 border border-purple-500/40 text-white placeholder-slate-400 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/30 transition-all shadow-2xl backdrop-blur-2xl">
+        <svg class="w-6 h-6 text-purple-400 absolute left-4.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <button id="clear-search-btn" class="hidden absolute right-4 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-slate-800 text-slate-400 hover:text-white transition-colors" title="Clear Search">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Quick Category Chips -->
+      <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 text-xs">
+        <span class="text-[10px] font-black uppercase text-purple-400 mr-1 flex-none">Quick Filters:</span>
+        <button class="search-chip-btn px-3.5 py-1.5 rounded-full bg-purple-600/90 text-white font-bold border border-purple-400/40 hover:scale-105 transition-all flex-none" data-query="" data-type="all">All Media</button>
+        <button class="search-chip-btn px-3.5 py-1.5 rounded-full bg-[#181236] text-slate-300 font-bold border border-purple-500/20 hover:border-emerald-400 hover:text-white hover:scale-105 transition-all flex-none" data-query="" data-type="movie">Movies</button>
+        <button class="search-chip-btn px-3.5 py-1.5 rounded-full bg-[#181236] text-slate-300 font-bold border border-purple-500/20 hover:border-emerald-400 hover:text-white hover:scale-105 transition-all flex-none" data-query="" data-type="tv">TV Shows</button>
+        <button class="search-chip-btn px-3.5 py-1.5 rounded-full bg-[#181236] text-slate-300 font-bold border border-purple-500/20 hover:border-emerald-400 hover:text-white hover:scale-105 transition-all flex-none" data-query="Game of Thrones">Game of Thrones</button>
+        <button class="search-chip-btn px-3.5 py-1.5 rounded-full bg-[#181236] text-slate-300 font-bold border border-purple-500/20 hover:border-emerald-400 hover:text-white hover:scale-105 transition-all flex-none" data-query="Sci-Fi">Sci-Fi & Fantasy</button>
+        <button class="search-chip-btn px-3.5 py-1.5 rounded-full bg-[#181236] text-slate-300 font-bold border border-purple-500/20 hover:border-emerald-400 hover:text-white hover:scale-105 transition-all flex-none" data-query="Action">Action</button>
+        <button class="search-chip-btn px-3.5 py-1.5 rounded-full bg-[#181236] text-slate-300 font-bold border border-purple-500/20 hover:border-emerald-400 hover:text-white hover:scale-105 transition-all flex-none" data-query="Christopher Nolan">Christopher Nolan</button>
+        <button class="search-chip-btn px-3.5 py-1.5 rounded-full bg-[#181236] text-slate-300 font-bold border border-purple-500/20 hover:border-emerald-400 hover:text-white hover:scale-105 transition-all flex-none" data-query="tt0944947">IMDb: tt0944947</button>
+      </div>
+    </div>
+
+    <!-- Detailed Filter & Sorting Toolbar -->
+    <div class="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-[#120e24]/90 border border-purple-500/20 mb-8 backdrop-blur-xl shadow-xl">
+      <div class="flex flex-wrap items-center gap-3">
+        <select id="filter-type-select" class="px-3.5 py-2 rounded-xl bg-[#1a1438] text-xs font-bold text-white border border-purple-500/30 focus:outline-none focus:border-emerald-400">
+          <option value="all">All Media Types</option>
+          <option value="movie">Movies Only</option>
+          <option value="tv">TV Shows Only</option>
+        </select>
+
+        <select id="filter-genre-select" class="px-3.5 py-2 rounded-xl bg-[#1a1438] text-xs font-bold text-white border border-purple-500/30 focus:outline-none focus:border-emerald-400">
+          <option value="all">All Genres</option>
+          <option value="Action">Action</option>
+          <option value="Science Fiction">Sci-Fi & Fantasy</option>
+          <option value="Drama">Drama</option>
+          <option value="Adventure">Adventure</option>
+          <option value="Crime">Crime & Mystery</option>
+          <option value="Comedy">Comedy</option>
+          <option value="Animation">Animation</option>
+        </select>
+
+        <select id="filter-sort-select" class="px-3.5 py-2 rounded-xl bg-[#1a1438] text-xs font-bold text-white border border-purple-500/30 focus:outline-none focus:border-emerald-400">
+          <option value="popularity">Sort by Popularity</option>
+          <option value="rating">Sort by Rating</option>
+          <option value="date">Sort by Release Date</option>
+          <option value="title">Sort by Title</option>
+        </select>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span id="search-results-count" class="text-xs font-mono font-bold text-emerald-400">0 titles found</span>
+      </div>
+    </div>
+
+    <!-- Search Results Grid -->
+    <div id="search-results-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6"></div>
+  </main>
+
+  <!-- 5. WATCHLIST VIEW -->
+  <main id="view-watchlist" class="app-view-container hidden pt-24 px-4 md:px-12 pb-20">
+    <h2 class="text-2xl font-black text-white mb-6">My Stuff (Saved Watchlist)</h2>
+    <div id="watchlist-empty-state" class="hidden text-center py-20 text-slate-400">
+      <p class="text-lg font-bold mb-2 text-white">Your list is currently empty.</p>
+      <p class="text-xs">Browse titles and click "Add to Watchlist" to save them for later.</p>
+    </div>
+    <div id="watchlist-grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6"></div>
+  </main>
+
+  <!-- 6. FAVORITES VIEW -->
+  <main id="view-favorites" class="app-view-container hidden pt-24 px-4 md:px-12 pb-20">
+    <h2 class="text-2xl font-black text-white mb-6">Favorite Movies & TV Series</h2>
+    <div id="favorites-empty-state" class="hidden text-center py-20 text-slate-400">
+      <p class="text-lg font-bold mb-2 text-white">No favorites added yet.</p>
+      <p class="text-xs">Heart your top movies and TV series to display them here.</p>
+    </div>
+    <div id="favorites-grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6"></div>
+  </main>
+
+  <!-- MODALS -->
+
+  <!-- Media Details Modal Overlay (Hulu / Max Style Info Sheet) -->
+  <div id="media-details-modal" class="app-modal-overlay modal-backdrop fixed inset-0 z-50 hidden items-center justify-center p-3 md:p-8 bg-black/85 backdrop-blur-2xl transition-opacity">
+    <div class="relative w-full max-w-5xl max-h-[92vh] bg-[#0d0a1f] border border-purple-500/30 rounded-3xl overflow-y-auto no-scrollbar shadow-2xl flex flex-col">
+      
+      <!-- Backdrop & Header -->
+      <div class="relative w-full h-72 md:h-96 flex-none overflow-hidden">
+        <img id="modal-backdrop-img" src="" class="w-full h-full object-cover">
+        <div class="absolute inset-0 bg-gradient-to-t from-[#0d0a1f] via-[#0d0a1f]/50 to-transparent"></div>
+
+        <button class="modal-close-btn absolute top-4 right-4 p-3 rounded-full bg-black/70 hover:bg-black text-white transition-colors border border-white/10 z-20">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Main Info Body -->
+      <div class="p-6 md:p-8 -mt-28 relative z-10 flex flex-col md:flex-row gap-6">
+        <!-- Poster -->
+        <img id="modal-poster-img" src="" class="w-40 md:w-52 aspect-[2/3] rounded-2xl object-cover border-2 border-purple-500/40 shadow-2xl flex-none">
+
+        <!-- Details -->
+        <div class="flex-1 flex flex-col justify-end">
+          <div class="flex flex-wrap items-center gap-2 mb-2">
+            <span id="modal-badge" class="px-2.5 py-0.5 rounded bg-purple-600/90 text-white text-[10px] font-black uppercase">MAX ORIGINAL</span>
+            <span id="modal-tmdb-id" class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-mono border border-emerald-500/30">TMDb ID</span>
+            <span id="modal-imdb-id" class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-mono border border-amber-500/30">IMDb ID</span>
+          </div>
+
+          <h2 id="modal-media-title" class="text-3xl md:text-5xl font-black text-white mb-1">Media Title</h2>
+          <p id="modal-media-tagline" class="text-xs md:text-sm font-bold text-emerald-400 italic mb-3"></p>
+
+          <div class="flex flex-wrap items-center gap-3 text-xs mb-4">
+            <span id="modal-match-score" class="font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">98% Match</span>
+            <span id="modal-rating" class="font-bold text-amber-400">★ 8.5</span>
+            <span id="modal-year" class="text-slate-300">2024</span>
+            <span id="modal-runtime" class="text-slate-300">120 min</span>
+          </div>
+
+          <p id="modal-genres" class="text-xs font-semibold text-purple-300 mb-5"></p>
+
+          <div class="flex flex-wrap items-center gap-3 mb-4">
+            <button id="modal-play-btn" class="px-7 py-3 rounded-full bg-gradient-to-r from-purple-600 to-emerald-500 hover:from-purple-500 hover:to-emerald-400 text-white font-black text-xs flex items-center gap-2 shadow-xl transition-transform hover:scale-105">
+              <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Start Playback
+            </button>
+
+            <button id="modal-trailer-btn" class="px-5 py-3 rounded-full bg-[#1e173e] hover:bg-purple-900/50 text-white font-bold text-xs border border-purple-500/30 flex items-center gap-2 transition-transform hover:scale-105">
+              Watch Trailer
+            </button>
+
+            <button id="modal-watchlist-btn" class="px-5 py-3 rounded-full bg-[#1e173e] hover:bg-purple-900/50 text-white font-bold text-xs border border-purple-500/30 flex items-center gap-2 transition-transform hover:scale-105">
+              Add to My Stuff
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Storyline Overview & Full Episode Guide -->
+      <div class="px-6 md:px-8 pb-8 flex flex-col gap-6">
+        <div>
+          <h4 class="text-xs font-black uppercase tracking-wider text-purple-400 mb-2">Synopsis</h4>
+          <p id="modal-overview" class="text-xs md:text-sm text-slate-300 leading-relaxed"></p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 text-xs text-slate-400 border-t border-b border-purple-500/20 py-4">
+          <div><strong class="text-white">Director:</strong> <span id="modal-director">N/A</span></div>
+          <div><strong class="text-white">Writers:</strong> <span id="modal-writers">N/A</span></div>
+        </div>
+
+        <!-- Cast Carousel -->
+        <div>
+          <h4 class="text-xs font-black uppercase tracking-wider text-purple-400 mb-3">Featured Cast</h4>
+          <div id="modal-cast-container" class="flex gap-4 overflow-x-auto no-scrollbar py-2"></div>
+        </div>
+
+        <!-- TV Seasons & Episode Browser -->
+        <div id="modal-tv-seasons-section" class="hidden border-t border-purple-500/20 pt-6">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h4 class="text-sm font-black uppercase tracking-wider text-white">Episodes & Seasons</h4>
+              <p class="text-[11px] text-slate-400">Select a season to view all episode guides and stills</p>
+            </div>
+            <select id="modal-season-select" class="px-4 py-2 rounded-xl bg-[#1e173e] text-xs font-bold text-emerald-400 border border-purple-500/40 focus:outline-none"></select>
+          </div>
+          <div id="modal-episodes-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+
+        <!-- Similar Recommendations -->
+        <div>
+          <h4 class="text-xs font-black uppercase tracking-wider text-purple-400 mb-3">You Might Also Like</h4>
+          <div id="modal-similar-container" class="flex gap-4 overflow-x-auto no-scrollbar py-2"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Trailer Overlay Modal -->
+  <div id="trailer-modal" class="app-modal-overlay modal-backdrop fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/90 backdrop-blur-2xl">
+    <div class="relative w-full max-w-4xl aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-purple-500/30">
+      <button class="modal-close-btn absolute top-3 right-3 z-10 p-2.5 rounded-full bg-black/80 hover:bg-red-500 text-white transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+      <iframe id="trailer-iframe" class="w-full h-full border-0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="app-modal-overlay modal-backdrop fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+    <div class="relative w-full max-w-md bg-[#0d0a1f] border border-purple-500/30 rounded-3xl p-6 shadow-2xl">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-lg font-black text-white">Cinestar Settings</h3>
+        <button class="modal-close-btn p-2 rounded-full bg-[#1e173e] hover:bg-purple-900/50 text-slate-300">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form id="settings-form" class="flex flex-col gap-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-300 mb-1">TMDb API Read Key (v3)</label>
+          <input id="setting-api-key" type="text" placeholder="Enter custom TMDb API Key" class="w-full px-4 py-2.5 rounded-xl bg-[#1e173e] border border-purple-500/30 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-400">
+          <p class="text-[10px] text-slate-400 mt-1">Provide your TMDb key for live global metadata fetching.</p>
+        </div>
+
+        <div class="flex items-center justify-between py-2 border-t border-b border-purple-500/20">
+          <span class="text-xs font-semibold text-slate-300">Autoplay Next Episode</span>
+          <input id="setting-autoplay" type="checkbox" class="w-4 h-4 accent-purple-600 rounded cursor-pointer" checked>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 mb-1">Default Streaming Quality</label>
+          <select id="setting-quality" class="w-full px-4 py-2 rounded-xl bg-[#1e173e] border border-purple-500/30 text-xs text-white focus:outline-none">
+            <option value="4k">4K Ultra HD (HDR10)</option>
+            <option value="1080p" selected>1080p Full HD</option>
+            <option value="720p">720p HD</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-3 pt-4">
+          <button type="submit" class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-emerald-500 hover:from-purple-500 hover:to-emerald-400 text-white font-black text-xs shadow-lg transition-transform hover:scale-105">
+            Save Changes
+          </button>
+          <button id="clear-history-btn" type="button" class="px-4 py-2.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-400 font-bold text-xs transition-colors">
+            Clear Watch History
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Entry Script -->
+  <script type="module" src="/script.js"></script>
+</body>
+</html>
