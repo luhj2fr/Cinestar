@@ -158,11 +158,13 @@ export class CustomPlayer {
               <span class="text-[10px] font-black text-emerald-400 uppercase tracking-wider hidden sm:inline">Server:</span>
               <select id="player-server-select" class="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer">
                 <option value="1" class="bg-[#0e0a24] text-white">Server 1 (VidLink HD PRO - Primary)</option>
-                <option value="2" class="bg-[#0e0a24] text-white">Server 2 (VidSrc PRO 4K)</option>
+                <option value="2" class="bg-[#0e0a24] text-white">Server 2 (VidSrc.me HD Stream)</option>
                 <option value="3" class="bg-[#0e0a24] text-white">Server 3 (EmbedSu 4K HD)</option>
                 <option value="4" class="bg-[#0e0a24] text-white">Server 4 (VidSrc CC HD)</option>
-                <option value="5" class="bg-[#0e0a24] text-white">Server 5 (Official HD Feature / Trailer)</option>
-                <option value="6" class="bg-[#0e0a24] text-white">Server 6 (Cinestar HTML5 MP4 Player)</option>
+                <option value="5" class="bg-[#0e0a24] text-white">Server 5 (AutoEmbed Fast)</option>
+                <option value="6" class="bg-[#0e0a24] text-white">Server 6 (2Embed HD Stream)</option>
+                <option value="7" class="bg-[#0e0a24] text-white">Server 7 (Official HD Feature / Trailer)</option>
+                <option value="8" class="bg-[#0e0a24] text-white">Server 8 (Cinestar HTML5 MP4 Player)</option>
               </select>
             </div>
 
@@ -527,10 +529,10 @@ export class CustomPlayer {
           ? `https://vidlink.pro/tv/${id}/${s}/${e}?primaryColor=a855f7&secondaryColor=10b981&iconColor=ffffff&autoplay=true`
           : `https://vidlink.pro/movie/${id}?primaryColor=a855f7&secondaryColor=10b981&iconColor=ffffff&autoplay=true`;
       case 2:
-        // VidSrc PRO
+        // VidSrc.me (Official VidSrc Engine)
         return type === 'tv'
-          ? `https://vidsrc.pro/embed/tv/${id}/${s}/${e}`
-          : `https://vidsrc.pro/embed/movie/${id}`;
+          ? `https://vidsrc.me/embed/tv?tmdb=${id}&season=${s}&episode=${e}`
+          : `https://vidsrc.me/embed/movie?tmdb=${id}`;
       case 3:
         // EmbedSu 4K HD
         return type === 'tv'
@@ -542,6 +544,16 @@ export class CustomPlayer {
           ? `https://vidsrc.cc/v2/embed/tv/${id}/${s}/${e}`
           : `https://vidsrc.cc/v2/embed/movie/${id}`;
       case 5:
+        // AutoEmbed Stream
+        return type === 'tv'
+          ? `https://player.autoembed.cc/embed/tv/${id}/${s}/${e}`
+          : `https://player.autoembed.cc/embed/movie/${id}`;
+      case 6:
+        // 2Embed HD Stream
+        return type === 'tv'
+          ? `https://www.2embed.cc/embedtv/${id}&s=${s}&e=${e}`
+          : `https://www.2embed.cc/embed/${id}`;
+      case 7:
         // Official YouTube Feature / Trailer HD
         return `https://www.youtube.com/embed/${trailerKey}?autoplay=1&controls=1&modestbranding=1&rel=0&enablejsapi=1`;
       default:
@@ -657,24 +669,14 @@ export class CustomPlayer {
 
     this.toggleLoading(true);
 
-    // Servers 1 - 5: High-Definition Embedded Video Streams (VidLink, VidSrc, EmbedSu, VidSrc CC, YouTube)
-    if (this.currentServer >= 1 && this.currentServer <= 5) {
+    // Servers 1 - 7: High-Definition Embedded Video Streams (VidLink, VidSrc, EmbedSu, VidSrc CC, AutoEmbed, 2Embed, YouTube)
+    if (this.currentServer >= 1 && this.currentServer <= 7) {
       const embedUrl = this.getEmbedUrl(this.currentServer, this.mediaItem);
       if (embedUrl) {
         if (iframe) {
-          // Reset src briefly if URL changed to clear memory buffer
           if (iframe.src !== embedUrl) {
-            iframe.src = 'about:blank';
+            iframe.src = embedUrl;
           }
-          
-          const handleLoaded = () => {
-            this.toggleLoading(false);
-            iframe.removeEventListener('load', handleLoaded);
-          };
-          iframe.addEventListener('load', handleLoaded);
-
-          // Assign new embed URL
-          iframe.src = embedUrl;
         }
 
         if (iframeWrapper) iframeWrapper.classList.remove('hidden');
@@ -686,13 +688,13 @@ export class CustomPlayer {
         if (bottomBar) bottomBar.classList.add('hidden');
 
         // Safety fallback timer to hide spinner
-        setTimeout(() => this.toggleLoading(false), 800);
+        setTimeout(() => this.toggleLoading(false), 600);
         return;
       }
     }
 
-    // Server 6: Native Cinestar Custom HTML5 MP4 Player with custom bottom control bar
-    if (this.currentServer === 6) {
+    // Server 8: Native Cinestar Custom HTML5 MP4 Player with custom bottom control bar
+    if (this.currentServer === 8) {
       if (iframeWrapper) iframeWrapper.classList.add('hidden');
       if (iframe) iframe.src = '';
 
@@ -1034,7 +1036,7 @@ export class CustomPlayer {
    */
   handleStreamError() {
     this.toggleLoading(false);
-    const nextServer = ((this.currentServer || 1) % 6) + 1;
+    const nextServer = ((this.currentServer || 1) % 8) + 1;
     if (nextServer !== 1) {
       this.switchServer(nextServer);
     } else {
