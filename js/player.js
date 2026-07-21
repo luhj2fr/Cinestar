@@ -122,8 +122,8 @@ export class CustomPlayer {
         </div>
 
         <!-- Top Control Bar (Title, Season, Brand Badge, Server Selector, PiP, Close) -->
-        <div id="player-top-bar" class="absolute top-0 left-0 right-0 p-6 flex items-center justify-between bg-gradient-to-b from-[#080612]/95 via-[#080612]/60 to-transparent transition-opacity duration-300 z-30">
-          <div class="flex items-center gap-4">
+        <div id="player-top-bar" class="absolute top-0 left-0 right-0 p-6 flex items-center justify-between bg-gradient-to-b from-[#080612]/95 via-[#080612]/60 to-transparent transition-opacity duration-300 z-30 pointer-events-none">
+          <div class="flex items-center gap-4 pointer-events-auto">
             <button id="player-back-btn" class="p-2.5 rounded-full bg-[#181236]/80 hover:bg-purple-900/60 text-white border border-purple-500/30 backdrop-blur-xl transition-all hover:scale-105" title="Go Back">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
             </button>
@@ -137,7 +137,7 @@ export class CustomPlayer {
             </div>
           </div>
 
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-3 pointer-events-auto">
             <!-- TV Season & Episode Controls (Visible for TV Shows) -->
             <div id="player-tv-controls" class="hidden flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#181236]/90 border border-purple-500/40 backdrop-blur-xl shadow-xl">
               <span class="text-[10px] font-black text-purple-300 uppercase tracking-wider hidden sm:inline">Episode:</span>
@@ -178,7 +178,7 @@ export class CustomPlayer {
         </div>
 
         <!-- Big Center Play / Pause Gesture Overlay -->
-        <div id="player-gesture-overlay" class="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+        <div id="player-gesture-overlay" class="absolute inset-0 flex items-center justify-center pointer-events-none z-10 hidden">
           <div id="gesture-icon-box" class="w-20 h-20 rounded-full bg-[#120e24]/90 border border-purple-500/40 backdrop-blur-2xl flex items-center justify-center text-emerald-400 opacity-0 scale-50 transition-all duration-300 shadow-2xl">
             <svg id="gesture-play-svg" class="w-10 h-10 ml-1 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
             <svg id="gesture-pause-svg" class="w-10 h-10 hidden fill-current" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
@@ -916,8 +916,12 @@ export class CustomPlayer {
    */
   toggleLoading(isLoading) {
     const spinner = this.wrapper.querySelector('#player-loading-spinner');
-    if (isLoading) spinner.classList.remove('opacity-0', 'pointer-events-none');
-    else spinner.classList.add('opacity-0', 'pointer-events-none');
+    if (!spinner) return;
+    if (isLoading) {
+      spinner.classList.remove('opacity-0', 'pointer-events-none', 'hidden');
+    } else {
+      spinner.classList.add('opacity-0', 'pointer-events-none', 'hidden');
+    }
   }
 
   /**
@@ -977,19 +981,38 @@ export class CustomPlayer {
   resetControlsTimer() {
     const topBar = this.wrapper.querySelector('#player-top-bar');
     const bottomBar = this.wrapper.querySelector('#player-bottom-bar');
-
-    if (topBar) topBar.classList.remove('opacity-0', 'pointer-events-none');
-    if (bottomBar && this.currentServer === 8) bottomBar.classList.remove('opacity-0', 'pointer-events-none');
-    
     const viewport = this.wrapper.querySelector('#player-viewport');
-    if (viewport) viewport.style.cursor = 'default';
+
+    if (topBar) {
+      topBar.classList.remove('opacity-0');
+      topBar.classList.add('opacity-100');
+    }
+
+    if (this.currentServer === 8) {
+      if (bottomBar) {
+        bottomBar.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+        bottomBar.classList.add('opacity-100');
+      }
+      if (viewport) viewport.style.cursor = 'default';
+    } else {
+      if (bottomBar) bottomBar.classList.add('hidden');
+      if (viewport) viewport.style.cursor = 'default';
+    }
 
     clearTimeout(this.hideControlsTimer);
     this.hideControlsTimer = setTimeout(() => {
-      if (topBar) topBar.classList.add('opacity-0', 'pointer-events-none');
-      if (bottomBar) bottomBar.classList.add('opacity-0', 'pointer-events-none');
-      if (viewport) viewport.style.cursor = 'none';
-    }, 2500);
+      if (topBar) {
+        topBar.classList.remove('opacity-100');
+        topBar.classList.add('opacity-0');
+      }
+      if (this.currentServer === 8) {
+        if (bottomBar) {
+          bottomBar.classList.remove('opacity-100');
+          bottomBar.classList.add('opacity-0', 'pointer-events-none');
+        }
+        if (viewport) viewport.style.cursor = 'none';
+      }
+    }, 3500);
   }
 
   /**
