@@ -54,7 +54,7 @@ export class CustomPlayer {
       <div class="relative w-full h-full flex flex-col justify-between overflow-hidden group/player" id="player-viewport">
         <!-- Embed Stream Iframe Container -->
         <div id="embed-iframe-wrapper" class="absolute inset-0 w-full h-full bg-black z-10 flex items-center justify-center">
-          <iframe id="embed-iframe-element" class="w-full h-full border-0" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe>
+          <iframe id="embed-iframe-element" class="w-full h-full border-0" allow="autoplay; encrypted-media; fullscreen; picture-in-picture; display-capture; accelerometer; gyroscope" allowfullscreen loading="eager" referrerpolicy="no-referrer-when-downgrade" style="will-change: transform; transform: translateZ(0); display: block;"></iframe>
         </div>
 
         <!-- Video Element -->
@@ -661,7 +661,22 @@ export class CustomPlayer {
     if (this.currentServer >= 1 && this.currentServer <= 5) {
       const embedUrl = this.getEmbedUrl(this.currentServer, this.mediaItem);
       if (embedUrl) {
-        if (iframe) iframe.src = embedUrl;
+        if (iframe) {
+          // Reset src briefly if URL changed to clear memory buffer
+          if (iframe.src !== embedUrl) {
+            iframe.src = 'about:blank';
+          }
+          
+          const handleLoaded = () => {
+            this.toggleLoading(false);
+            iframe.removeEventListener('load', handleLoaded);
+          };
+          iframe.addEventListener('load', handleLoaded);
+
+          // Assign new embed URL
+          iframe.src = embedUrl;
+        }
+
         if (iframeWrapper) iframeWrapper.classList.remove('hidden');
         if (mainVideo) {
           mainVideo.pause();
@@ -670,7 +685,8 @@ export class CustomPlayer {
         // Hide Cinestar's bottom control bar when using embedded players to prevent duplicate control bars
         if (bottomBar) bottomBar.classList.add('hidden');
 
-        setTimeout(() => this.toggleLoading(false), 900);
+        // Safety fallback timer to hide spinner
+        setTimeout(() => this.toggleLoading(false), 800);
         return;
       }
     }
