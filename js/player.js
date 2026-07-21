@@ -142,13 +142,13 @@ export class CustomPlayer {
             <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#181236]/90 border border-purple-500/40 backdrop-blur-xl shadow-xl">
               <span class="text-[10px] font-black text-emerald-400 uppercase tracking-wider hidden sm:inline">Server:</span>
               <select id="player-server-select" class="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer">
-                <option value="1" class="bg-[#0e0a24] text-white">Server 1 (VidSrc PRO)</option>
-                <option value="2" class="bg-[#0e0a24] text-white">Server 2 (VidLink HD)</option>
-                <option value="3" class="bg-[#0e0a24] text-white">Server 3 (EmbedSu 4K)</option>
-                <option value="4" class="bg-[#0e0a24] text-white">Server 4 (Official HD Feature / Trailer)</option>
-                <option value="5" class="bg-[#0e0a24] text-white">Server 5 (AutoEmbed)</option>
-                <option value="6" class="bg-[#0e0a24] text-white">Server 6 (2Embed)</option>
-                <option value="7" class="bg-[#0e0a24] text-white">Server 7 (VidSrc CC)</option>
+                <option value="1" class="bg-[#0e0a24] text-white">Server 1 (Cinestar Custom Player 4K)</option>
+                <option value="2" class="bg-[#0e0a24] text-white">Server 2 (VidSrc PRO Embed)</option>
+                <option value="3" class="bg-[#0e0a24] text-white">Server 3 (VidLink HD Embed)</option>
+                <option value="4" class="bg-[#0e0a24] text-white">Server 4 (EmbedSu 4K Embed)</option>
+                <option value="5" class="bg-[#0e0a24] text-white">Server 5 (Official HD Feature / Trailer)</option>
+                <option value="6" class="bg-[#0e0a24] text-white">Server 6 (AutoEmbed Stream)</option>
+                <option value="7" class="bg-[#0e0a24] text-white">Server 7 (2Embed Stream)</option>
               </select>
             </div>
 
@@ -453,32 +453,28 @@ export class CustomPlayer {
     const trailerKey = mediaItem.trailer_key || 'uYPbbksJxIg';
 
     switch (Number(serverIndex)) {
-      case 1:
+      case 2:
         return type === 'tv'
           ? `https://vidsrc.me/embed/tv?tmdb=${id}&season=${s}&episode=${e}`
           : `https://vidsrc.me/embed/movie?tmdb=${id}`;
-      case 2:
+      case 3:
         return type === 'tv'
           ? `https://vidlink.pro/tv/${id}/${s}/${e}`
           : `https://vidlink.pro/movie/${id}`;
-      case 3:
+      case 4:
         return type === 'tv'
           ? `https://embed.su/embed/tv/${id}/${s}/${e}`
           : `https://embed.su/embed/movie/${id}`;
-      case 4:
-        return `https://www.youtube.com/embed/${trailerKey}?autoplay=1&controls=1&modestbranding=1&rel=0&enablejsapi=1`;
       case 5:
+        return `https://www.youtube.com/embed/${trailerKey}?autoplay=1&controls=1&modestbranding=1&rel=0&enablejsapi=1`;
+      case 6:
         return type === 'tv'
           ? `https://player.autoembed.cc/embed/tv/${id}/${s}/${e}`
           : `https://player.autoembed.cc/embed/movie/${id}`;
-      case 6:
+      case 7:
         return type === 'tv'
           ? `https://www.2embed.cc/embedtv/${id}&s=${s}&e=${e}`
           : `https://www.2embed.cc/embed/${id}`;
-      case 7:
-        return type === 'tv'
-          ? `https://vidsrc.cc/v2/embed/tv/${id}/${s}/${e}`
-          : `https://vidsrc.cc/v2/embed/movie/${id}`;
       default:
         return null;
     }
@@ -550,7 +546,52 @@ export class CustomPlayer {
 
     this.toggleLoading(true);
 
-    if (this.currentServer >= 1 && this.currentServer <= 7) {
+    // Server 1: Native Cinestar Custom HTML5 Player with custom bottom control bar
+    if (this.currentServer === 1) {
+      if (iframeWrapper) iframeWrapper.classList.add('hidden');
+      if (iframe) iframe.src = '';
+
+      if (mainVideo) {
+        mainVideo.classList.remove('hidden');
+        if (bottomBar) bottomBar.classList.remove('hidden');
+
+        const fallbackStreams = [
+          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+          'https://vjs.zencdn.net/v/oceans.mp4',
+          'https://media.w3.org/2010/05/sintel/trailer.mp4',
+          'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4'
+        ];
+
+        const streamIndex = Math.abs(this.mediaItem?.id || 0) % fallbackStreams.length;
+        const streamUrl = this.mediaItem?.stream_url || fallbackStreams[streamIndex];
+
+        mainVideo.src = streamUrl;
+        mainVideo.load();
+
+        const settings = StorageManager.getSettings();
+        mainVideo.volume = settings.volume || 0.8;
+        mainVideo.playbackRate = 1.0;
+
+        mainVideo.play().then(() => {
+          this.toggleLoading(false);
+          this.updatePlayPauseIcons(true);
+        }).catch(() => {
+          mainVideo.muted = true;
+          this.updateVolumeIcons();
+          mainVideo.play().then(() => {
+            this.toggleLoading(false);
+            this.updatePlayPauseIcons(true);
+          }).catch(() => {
+            this.handleStreamError();
+          });
+        });
+        return;
+      }
+    }
+
+    // Servers 2 - 7: External Embed Sources
+    if (this.currentServer >= 2 && this.currentServer <= 7) {
       const embedUrl = this.getEmbedUrl(this.currentServer, this.mediaItem);
       if (embedUrl) {
         if (iframe) iframe.src = embedUrl;
