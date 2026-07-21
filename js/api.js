@@ -8,16 +8,16 @@ import { StorageManager } from './storage.js';
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/';
 const DEFAULT_TMDB_API_KEY = 'fed93f38c50b0032b3f866e99deb9335'; // User provided TMDb API key
 
-// High quality video streams mapped for instant play
+// High quality video streams mapped for instant play with robust fallback CDNs
 const SAMPLE_STREAMS = [
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
   'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+  'https://vjs.zencdn.net/v/oceans.mp4',
+  'https://media.w3.org/2010/05/sintel/trailer.mp4',
+  'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
   'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
   'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
   'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4'
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4'
 ];
 
 /**
@@ -409,12 +409,29 @@ export class MediaAPI {
   }
 
   /**
-   * Helper to format TMDb image URLs
+   * Helper to format TMDb image URLs - Returns null if missing so items without images can be strictly filtered out
    */
   static getImageUrl(path, size = 'w500') {
-    if (!path) return 'https://via.placeholder.com/500x750/090714/ffffff?text=Cinestar';
+    if (!path || path === 'null' || path.includes('placeholder') || path.includes('via.placeholder')) return null;
     if (path.startsWith('http://') || path.startsWith('https://')) return path;
-    return `${TMDB_IMAGE_BASE}${size}${path}`;
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    return `${TMDB_IMAGE_BASE}${size}${cleanPath}`;
+  }
+
+  /**
+   * Helper to strictly filter out any media item missing a valid poster or backdrop image
+   */
+  static filterHasImages(items) {
+    if (!Array.isArray(items)) return [];
+    return items.filter(item => {
+      if (!item) return false;
+      const poster = item.poster_path || item.poster;
+      const backdrop = item.backdrop_path || item.backdrop;
+      return poster && backdrop && 
+             !String(poster).includes('placeholder') && 
+             !String(backdrop).includes('placeholder') &&
+             poster !== 'null' && backdrop !== 'null';
+    });
   }
 
   /**
@@ -448,6 +465,8 @@ export class MediaAPI {
       items = OFFLINE_MEDIA_DATABASE;
     }
 
+    items = this.filterHasImages(items);
+
     if (hub && hub !== 'all') {
       return items.filter(i => i.hub === hub || (OFFLINE_MEDIA_DATABASE.find(o => String(o.id) === String(i.id))?.hub === hub));
     }
@@ -461,9 +480,9 @@ export class MediaAPI {
   static async getPopularMovies(page = 1) {
     const apiResult = await this.fetchTmdb('/movie/popular', { page });
     if (apiResult && apiResult.results && apiResult.results.length > 0) {
-      return apiResult.results.map(item => this.normalizeMediaItem(item, 'movie'));
+      return this.filterHasImages(apiResult.results.map(item => this.normalizeMediaItem(item, 'movie')));
     }
-    return OFFLINE_MEDIA_DATABASE.filter(m => m.type === 'movie');
+    return this.filterHasImages(OFFLINE_MEDIA_DATABASE.filter(m => m.type === 'movie'));
   }
 
   /**
@@ -472,9 +491,9 @@ export class MediaAPI {
   static async getPopularTV(page = 1) {
     const apiResult = await this.fetchTmdb('/tv/popular', { page });
     if (apiResult && apiResult.results && apiResult.results.length > 0) {
-      return apiResult.results.map(item => this.normalizeMediaItem(item, 'tv'));
+      return this.filterHasImages(apiResult.results.map(item => this.normalizeMediaItem(item, 'tv')));
     }
-    return OFFLINE_MEDIA_DATABASE.filter(m => m.type === 'tv');
+    return this.filterHasImages(OFFLINE_MEDIA_DATABASE.filter(m => m.type === 'tv'));
   }
 
   /**
@@ -483,9 +502,9 @@ export class MediaAPI {
   static async getTopRated(type = 'movie', page = 1) {
     const apiResult = await this.fetchTmdb(`/${type}/top_rated`, { page });
     if (apiResult && apiResult.results && apiResult.results.length > 0) {
-      return apiResult.results.map(item => this.normalizeMediaItem(item, type));
+      return this.filterHasImages(apiResult.results.map(item => this.normalizeMediaItem(item, type)));
     }
-    return OFFLINE_MEDIA_DATABASE.filter(m => m.type === type);
+    return this.filterHasImages(OFFLINE_MEDIA_DATABASE.filter(m => m.type === type));
   }
 
   /**
@@ -494,9 +513,9 @@ export class MediaAPI {
   static async getUpcoming(page = 1) {
     const apiResult = await this.fetchTmdb('/movie/upcoming', { page });
     if (apiResult && apiResult.results && apiResult.results.length > 0) {
-      return apiResult.results.map(item => this.normalizeMediaItem(item, 'movie'));
+      return this.filterHasImages(apiResult.results.map(item => this.normalizeMediaItem(item, 'movie')));
     }
-    return OFFLINE_MEDIA_DATABASE.filter(m => m.type === 'movie');
+    return this.filterHasImages(OFFLINE_MEDIA_DATABASE.filter(m => m.type === 'movie'));
   }
 
   /**
@@ -633,7 +652,7 @@ export class MediaAPI {
       }
     });
 
-    return combined.filter(item => {
+    const filtered = combined.filter(item => {
       if (filters.type && filters.type !== 'all' && item.type !== filters.type) return false;
       if (filters.genre && filters.genre !== 'all') {
         const hasGenre = (item.genres || []).some(g => String(g.id) === String(filters.genre) || g.name === filters.genre);
@@ -642,6 +661,8 @@ export class MediaAPI {
       if (filters.minRating && (item.vote_average || 0) < Number(filters.minRating)) return false;
       return true;
     });
+
+    return this.filterHasImages(filtered);
   }
 
   /**

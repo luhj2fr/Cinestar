@@ -61,10 +61,13 @@ export class CustomPlayer {
             ⚠️
           </div>
           <h3 class="text-xl md:text-2xl font-black text-white mb-2">Stream Playback Issue</h3>
-          <p class="text-xs text-slate-300 max-w-md mb-6 leading-relaxed" id="player-error-msg">The media stream encountered a temporary loading error. Swapping to backup server...</p>
-          <div class="flex items-center gap-3">
+          <p class="text-xs text-slate-300 max-w-md mb-6 leading-relaxed" id="player-error-msg">The video stream encountered a loading issue. Try switching servers or watching the trailer.</p>
+          <div class="flex flex-wrap items-center justify-center gap-3">
             <button id="player-retry-stream-btn" class="px-6 py-3 bg-gradient-to-r from-purple-600 to-emerald-500 hover:from-purple-500 hover:to-emerald-400 text-white font-black text-xs uppercase tracking-wider rounded-full shadow-2xl transition-transform hover:scale-105">
-              Retry Playback
+              Switch Server & Retry
+            </button>
+            <button id="player-watch-trailer-btn" class="px-6 py-3 bg-purple-900/60 hover:bg-purple-800 text-emerald-300 font-bold text-xs rounded-full border border-purple-500/40 transition-transform hover:scale-105">
+              Watch Trailer
             </button>
             <button id="player-error-close-btn" class="px-6 py-3 bg-[#1a1438] hover:bg-purple-900/50 text-slate-300 hover:text-white font-bold text-xs rounded-full border border-purple-500/30">
               Close Player
@@ -285,13 +288,22 @@ export class CustomPlayer {
 
     const errorOverlay = this.wrapper.querySelector('#player-error-overlay');
     const retryStreamBtn = this.wrapper.querySelector('#player-retry-stream-btn');
+    const watchTrailerBtn = this.wrapper.querySelector('#player-watch-trailer-btn');
     const errorCloseBtn = this.wrapper.querySelector('#player-error-close-btn');
 
     if (retryStreamBtn) {
       retryStreamBtn.addEventListener('click', () => {
         errorOverlay.classList.add('hidden');
-        this.fallbackAttempted = false;
-        if (this.mediaItem) this.loadMedia(this.mediaItem);
+        this.handleStreamError();
+      });
+    }
+
+    if (watchTrailerBtn) {
+      watchTrailerBtn.addEventListener('click', () => {
+        errorOverlay.classList.add('hidden');
+        const trailerKey = this.mediaItem?.trailer_key || 'YoHD9XEInc0';
+        this.close();
+        window.dispatchEvent(new CustomEvent('open-trailer-event', { detail: trailerKey }));
       });
     }
 
@@ -407,7 +419,7 @@ export class CustomPlayer {
    */
   loadMedia(mediaItem, resumeTime = 0) {
     this.mediaItem = mediaItem;
-    this.fallbackAttempted = false;
+    this.fallbackIndex = 0;
     const errorOverlay = this.wrapper.querySelector('#player-error-overlay');
     if (errorOverlay) errorOverlay.classList.add('hidden');
 
@@ -429,7 +441,15 @@ export class CustomPlayer {
     }
 
     // Video src
-    const streamUrl = mediaItem.stream_url || 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4';
+    const fallbackStreams = [
+      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+      'https://vjs.zencdn.net/v/oceans.mp4',
+      'https://media.w3.org/2010/05/sintel/trailer.mp4',
+      'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4'
+    ];
+
+    const streamUrl = mediaItem.stream_url || fallbackStreams[0];
     this.video.src = streamUrl;
     this.video.load();
 
@@ -444,15 +464,26 @@ export class CustomPlayer {
     }
 
     this.toggleLoading(true);
-    this.video.play().then(() => {
-      this.toggleLoading(false);
-      this.updatePlayPauseIcons(true);
-    }).catch(err => {
-      console.warn('CustomPlayer: Autoplay prevented or stream error', err);
-      this.toggleLoading(false);
-      this.updatePlayPauseIcons(false);
-    });
 
+    const tryPlay = () => {
+      this.video.play().then(() => {
+        this.toggleLoading(false);
+        this.updatePlayPauseIcons(true);
+      }).catch(err => {
+        console.warn('Unmuted autoplay prevented by browser. Trying muted autoplay...', err);
+        this.video.muted = true;
+        this.updateVolumeIcons();
+        this.video.play().then(() => {
+          this.toggleLoading(false);
+          this.updatePlayPauseIcons(true);
+        }).catch(err2 => {
+          console.warn('Muted autoplay also rejected, executing handleStreamError...', err2);
+          this.handleStreamError();
+        });
+      });
+    };
+
+    tryPlay();
     this.resetControlsTimer();
   }
 
@@ -742,23 +773,34 @@ export class CustomPlayer {
   handleStreamError() {
     this.toggleLoading(false);
     const fallbackStreams = [
-      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
       'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4'
+      'https://vjs.zencdn.net/v/oceans.mp4',
+      'https://media.w3.org/2010/05/sintel/trailer.mp4',
+      'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4'
     ];
 
-    if (!this.fallbackAttempted) {
-      this.fallbackAttempted = true;
-      const currentSrc = this.video.src;
-      const nextFallback = fallbackStreams.find(s => s !== currentSrc) || fallbackStreams[0];
-      console.warn('Primary stream failed. Switch to backup stream:', nextFallback);
-      this.video.src = nextFallback;
+    this.fallbackIndex = (this.fallbackIndex || 0) + 1;
+
+    if (this.fallbackIndex < fallbackStreams.length) {
+      const nextStream = fallbackStreams[this.fallbackIndex];
+      console.warn(`Primary stream failed. Attempting backup stream #${this.fallbackIndex}: ${nextStream}`);
+      this.video.src = nextStream;
       this.video.load();
-      this.video.play().catch(() => {
-        this.showErrorOverlay('Unable to load video stream from source server.');
+      this.video.play().then(() => {
+        this.toggleLoading(false);
+        this.updatePlayPauseIcons(true);
+      }).catch(() => {
+        this.video.muted = true;
+        this.video.play().then(() => {
+          this.toggleLoading(false);
+          this.updatePlayPauseIcons(true);
+        }).catch(() => {
+          this.handleStreamError();
+        });
       });
     } else {
-      this.showErrorOverlay('Unable to load video stream from source server.');
+      this.showErrorOverlay('Unable to load video stream from current server. You can switch servers or watch the official HD trailer below.');
     }
   }
 

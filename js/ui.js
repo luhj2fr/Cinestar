@@ -115,6 +115,11 @@ export class UIManager {
       }
     });
 
+    // Custom event listener for trailer opening from player error state
+    window.addEventListener('open-trailer-event', (e) => {
+      this.openTrailerModal(e.detail || 'YoHD9XEInc0');
+    });
+
     if (searchFilterType) {
       searchFilterType.addEventListener('change', (e) => {
         this.searchEngine.setFilter('type', e.target.value);
@@ -346,7 +351,7 @@ export class UIManager {
     container.innerHTML = list.map(item => `
       <div class="media-card flex-none w-72 group relative bg-[#120e24] rounded-2xl overflow-hidden border border-purple-500/20 shadow-2xl transition-all duration-300 hover:scale-[1.03] hover:border-emerald-400">
         <div class="relative aspect-video w-full overflow-hidden bg-slate-900">
-          <img src="${item.backdrop || item.poster || MediaAPI.getImageUrl(null)}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy">
+          <img src="${item.backdrop || item.poster || ''}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy" onerror="this.closest('.media-card')?.remove()">
           <div class="absolute inset-0 bg-gradient-to-t from-[#080612] via-[#080612]/30 to-transparent"></div>
           
           <!-- Play Overlay Button -->
@@ -497,7 +502,7 @@ export class UIManager {
     return `
       <div class="media-card flex-none w-44 md:w-52 group/card relative bg-[#120e24] rounded-2xl overflow-hidden border border-purple-500/20 shadow-2xl transition-all duration-300 hover:scale-105 hover:border-purple-500/60 cursor-pointer" data-id="${item.id}" data-type="${item.type || 'movie'}">
         <div class="relative aspect-[2/3] w-full overflow-hidden bg-slate-900">
-          <img src="${item.poster_path || MediaAPI.getImageUrl(item.poster)}" alt="${item.title || item.name}" class="w-full h-full object-cover group-hover/card:scale-110 transition-transform duration-500" loading="lazy">
+          <img src="${item.poster_path || MediaAPI.getImageUrl(item.poster) || ''}" alt="${item.title || item.name}" class="w-full h-full object-cover group-hover/card:scale-110 transition-transform duration-500" loading="lazy" onerror="this.closest('.media-card')?.remove()">
           <div class="absolute inset-0 bg-gradient-to-t from-[#080612] via-transparent to-transparent opacity-80 group-hover/card:opacity-100 transition-opacity"></div>
 
           <!-- Top Badge & Favorite Button -->
