@@ -567,7 +567,7 @@ export class MediaAPI {
           title: ep.name || `Episode ${ep.episode_number}`,
           overview: ep.overview || 'Synopsis for this episode.',
           runtime: ep.runtime || 50,
-          still_path: this.getImageUrl(ep.still_path, 'w500'),
+          still_path: ep.still_path ? this.getImageUrl(ep.still_path, 'w500') : 'https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=500&q=80',
           air_date: ep.air_date || '2023-01-01',
           stream_url: SAMPLE_STREAMS[idx % SAMPLE_STREAMS.length],
           skip_intro: { start: 10, end: 75 },
@@ -587,16 +587,16 @@ export class MediaAPI {
     return {
       season_number: seasonNumber,
       name: `Season ${seasonNumber}`,
-      episodes: Array.from({ length: 10 }).map((_, idx) => ({
+      episodes: Array.from({ length: 12 }).map((_, idx) => ({
         episode_number: idx + 1,
         title: `Episode ${idx + 1}: Chapter ${idx + 1}`,
         overview: `Intense chapter unfolding high-stakes drama and critical plot turns.`,
-        runtime: 52,
-        still_path: this.getImageUrl(null),
+        runtime: 48,
+        still_path: 'https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=500&q=80',
         air_date: '2023-05-12',
         stream_url: SAMPLE_STREAMS[idx % SAMPLE_STREAMS.length],
         skip_intro: { start: 10, end: 70 },
-        skip_credits: { start: 3000, end: 3120 }
+        skip_credits: { start: 2800, end: 2880 }
       }))
     };
   }

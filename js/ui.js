@@ -709,10 +709,12 @@ export class UIManager {
       episodeList.innerHTML = '<div class="p-6 text-center text-slate-400 col-span-2">Loading episode guides...</div>';
       const seasonData = await MediaAPI.getTVSeasonDetails(tvDetails.id, seasonNum);
 
-      episodeList.innerHTML = seasonData.episodes.map(ep => `
+      episodeList.innerHTML = seasonData.episodes.map(ep => {
+        const stillImg = ep.still_path || tvDetails.backdrop_path || tvDetails.poster_path || 'https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=500&q=80';
+        return `
         <div class="episode-card flex flex-col sm:flex-row gap-3.5 p-3 rounded-2xl bg-[#140f2e] hover:bg-[#1f1845] transition-all border border-purple-500/20 cursor-pointer group" data-season="${seasonNum}" data-ep="${ep.episode_number}">
           <div class="relative w-full sm:w-44 aspect-video rounded-xl overflow-hidden bg-slate-900 flex-none border border-purple-500/20">
-            <img src="${ep.still_path}" class="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy">
+            <img src="${stillImg}" class="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=500&q=80'">
             <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
               <div class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-emerald-500 text-white flex items-center justify-center shadow-xl">
                 <svg class="w-5 h-5 ml-0.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
@@ -723,12 +725,12 @@ export class UIManager {
 
           <div class="flex-1 flex flex-col justify-center">
             <div class="flex items-center justify-between mb-1">
-              <h5 class="text-xs font-black text-white group-hover:text-emerald-400 transition-colors">${ep.episode_number}. ${ep.title}</h5>
+              <h5 class="text-xs font-black text-white group-hover:text-emerald-400 transition-colors">S${seasonNum}:E${ep.episode_number} — ${ep.title}</h5>
             </div>
             <p class="text-[11px] text-slate-400 line-clamp-2 leading-snug">${ep.overview}</p>
           </div>
         </div>
-      `).join('');
+      `}).join('');
 
       episodeList.querySelectorAll('.episode-card').forEach(card => {
         card.addEventListener('click', () => {

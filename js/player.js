@@ -138,17 +138,31 @@ export class CustomPlayer {
           </div>
 
           <div class="flex items-center gap-3">
+            <!-- TV Season & Episode Controls (Visible for TV Shows) -->
+            <div id="player-tv-controls" class="hidden flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#181236]/90 border border-purple-500/40 backdrop-blur-xl shadow-xl">
+              <span class="text-[10px] font-black text-purple-300 uppercase tracking-wider hidden sm:inline">Episode:</span>
+              <select id="player-season-select" class="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer">
+                <option value="1" class="bg-[#0e0a24]">S1</option>
+              </select>
+              <select id="player-episode-select" class="bg-transparent text-xs font-bold text-emerald-400 focus:outline-none cursor-pointer">
+                <option value="1" class="bg-[#0e0a24]">E1</option>
+              </select>
+              <button id="player-next-ep-btn" title="Next Episode" class="text-xs font-black text-emerald-400 hover:text-emerald-300 flex items-center gap-1 pl-1.5 border-l border-purple-500/30">
+                <span class="hidden sm:inline">Next</span>
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+
             <!-- Server Selector Dropdown -->
             <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#181236]/90 border border-purple-500/40 backdrop-blur-xl shadow-xl">
               <span class="text-[10px] font-black text-emerald-400 uppercase tracking-wider hidden sm:inline">Server:</span>
               <select id="player-server-select" class="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer">
-                <option value="1" class="bg-[#0e0a24] text-white">Server 1 (Cinestar Custom Player 4K)</option>
-                <option value="2" class="bg-[#0e0a24] text-white">Server 2 (VidSrc PRO Embed)</option>
-                <option value="3" class="bg-[#0e0a24] text-white">Server 3 (VidLink HD Embed)</option>
-                <option value="4" class="bg-[#0e0a24] text-white">Server 4 (EmbedSu 4K Embed)</option>
+                <option value="1" class="bg-[#0e0a24] text-white">Server 1 (VidLink HD PRO - Primary)</option>
+                <option value="2" class="bg-[#0e0a24] text-white">Server 2 (VidSrc PRO 4K)</option>
+                <option value="3" class="bg-[#0e0a24] text-white">Server 3 (EmbedSu 4K HD)</option>
+                <option value="4" class="bg-[#0e0a24] text-white">Server 4 (VidSrc CC HD)</option>
                 <option value="5" class="bg-[#0e0a24] text-white">Server 5 (Official HD Feature / Trailer)</option>
-                <option value="6" class="bg-[#0e0a24] text-white">Server 6 (AutoEmbed Stream)</option>
-                <option value="7" class="bg-[#0e0a24] text-white">Server 7 (2Embed Stream)</option>
+                <option value="6" class="bg-[#0e0a24] text-white">Server 6 (Cinestar HTML5 MP4 Player)</option>
               </select>
             </div>
 
@@ -312,6 +326,60 @@ export class CustomPlayer {
       });
     }
 
+    // TV Season & Episode Selectors
+    const seasonSelect = this.wrapper.querySelector('#player-season-select');
+    const episodeSelect = this.wrapper.querySelector('#player-episode-select');
+    const nextEpBtn = this.wrapper.querySelector('#player-next-ep-btn');
+
+    const changeTVEpisode = async (s, e) => {
+      if (!this.mediaItem) return;
+      this.mediaItem.season = Number(s);
+      this.mediaItem.episode = Number(e);
+
+      try {
+        const seasonData = await MediaAPI.getTVSeasonDetails(this.mediaItem.id, this.mediaItem.season);
+        const matchEp = seasonData?.episodes?.find(ep => Number(ep.episode_number) === Number(e));
+        this.mediaItem.episodeTitle = matchEp ? matchEp.title : `Episode ${e}`;
+      } catch (err) {
+        this.mediaItem.episodeTitle = `Episode ${e}`;
+      }
+
+      const subtitleEl = this.wrapper.querySelector('#player-media-subtitle');
+      if (subtitleEl) {
+        subtitleEl.textContent = `Season ${this.mediaItem.season} • Episode ${this.mediaItem.episode} — ${this.mediaItem.episodeTitle}`;
+      }
+
+      this.playServer(this.currentServer || 1);
+    };
+
+    if (seasonSelect) {
+      seasonSelect.addEventListener('change', async (ev) => {
+        const newSeason = ev.target.value;
+        if (episodeSelect) episodeSelect.value = '1';
+        await changeTVEpisode(newSeason, 1);
+      });
+    }
+
+    if (episodeSelect) {
+      episodeSelect.addEventListener('change', async (ev) => {
+        const newEp = ev.target.value;
+        const currentSeason = seasonSelect ? seasonSelect.value : 1;
+        await changeTVEpisode(currentSeason, newEp);
+      });
+    }
+
+    if (nextEpBtn) {
+      nextEpBtn.addEventListener('click', async () => {
+        if (!this.mediaItem) return;
+        const currentEp = Number(this.mediaItem.episode || 1);
+        const nextEp = currentEp + 1;
+        const currentSeason = Number(this.mediaItem.season || 1);
+        
+        if (episodeSelect) episodeSelect.value = String(nextEp);
+        await changeTVEpisode(currentSeason, nextEp);
+      });
+    }
+
     const errorOverlay = this.wrapper.querySelector('#player-error-overlay');
     const retryStreamBtn = this.wrapper.querySelector('#player-retry-stream-btn');
     const watchTrailerBtn = this.wrapper.querySelector('#player-watch-trailer-btn');
@@ -453,28 +521,29 @@ export class CustomPlayer {
     const trailerKey = mediaItem.trailer_key || 'uYPbbksJxIg';
 
     switch (Number(serverIndex)) {
+      case 1:
+        // VidLink HD PRO (Clean Dark Purple/Emerald Theme)
+        return type === 'tv'
+          ? `https://vidlink.pro/tv/${id}/${s}/${e}?primaryColor=a855f7&secondaryColor=10b981&iconColor=ffffff&autoplay=true`
+          : `https://vidlink.pro/movie/${id}?primaryColor=a855f7&secondaryColor=10b981&iconColor=ffffff&autoplay=true`;
       case 2:
+        // VidSrc PRO
         return type === 'tv'
-          ? `https://vidsrc.me/embed/tv?tmdb=${id}&season=${s}&episode=${e}`
-          : `https://vidsrc.me/embed/movie?tmdb=${id}`;
+          ? `https://vidsrc.pro/embed/tv/${id}/${s}/${e}`
+          : `https://vidsrc.pro/embed/movie/${id}`;
       case 3:
-        return type === 'tv'
-          ? `https://vidlink.pro/tv/${id}/${s}/${e}`
-          : `https://vidlink.pro/movie/${id}`;
-      case 4:
+        // EmbedSu 4K HD
         return type === 'tv'
           ? `https://embed.su/embed/tv/${id}/${s}/${e}`
           : `https://embed.su/embed/movie/${id}`;
+      case 4:
+        // VidSrc CC HD
+        return type === 'tv'
+          ? `https://vidsrc.cc/v2/embed/tv/${id}/${s}/${e}`
+          : `https://vidsrc.cc/v2/embed/movie/${id}`;
       case 5:
+        // Official YouTube Feature / Trailer HD
         return `https://www.youtube.com/embed/${trailerKey}?autoplay=1&controls=1&modestbranding=1&rel=0&enablejsapi=1`;
-      case 6:
-        return type === 'tv'
-          ? `https://player.autoembed.cc/embed/tv/${id}/${s}/${e}`
-          : `https://player.autoembed.cc/embed/movie/${id}`;
-      case 7:
-        return type === 'tv'
-          ? `https://www.2embed.cc/embedtv/${id}&s=${s}&e=${e}`
-          : `https://www.2embed.cc/embed/${id}`;
       default:
         return null;
     }
@@ -508,6 +577,48 @@ export class CustomPlayer {
       } catch (err) {
         console.warn('MediaAPI: Could not fetch additional TMDb video details:', err);
       }
+    }
+
+    // Handle TV Show episode details and season selectors
+    if (mediaItem.type === 'tv') {
+      if (!mediaItem.season) mediaItem.season = 1;
+      if (!mediaItem.episode) mediaItem.episode = 1;
+
+      const tvControls = this.wrapper.querySelector('#player-tv-controls');
+      const seasonSelect = this.wrapper.querySelector('#player-season-select');
+      const episodeSelect = this.wrapper.querySelector('#player-episode-select');
+
+      if (tvControls) tvControls.classList.remove('hidden');
+
+      const seasonsCount = mediaItem.seasons_count || 5;
+      if (seasonSelect) {
+        seasonSelect.innerHTML = Array.from({ length: seasonsCount }).map((_, idx) => `
+          <option value="${idx + 1}" class="bg-[#0e0a24]">S${idx + 1}</option>
+        `).join('');
+        seasonSelect.value = mediaItem.season;
+      }
+
+      try {
+        const seasonData = await MediaAPI.getTVSeasonDetails(mediaItem.id, mediaItem.season);
+        const epCount = seasonData?.episodes?.length || 12;
+
+        if (episodeSelect) {
+          episodeSelect.innerHTML = Array.from({ length: epCount }).map((_, idx) => `
+            <option value="${idx + 1}" class="bg-[#0e0a24]">E${idx + 1}</option>
+          `).join('');
+          episodeSelect.value = mediaItem.episode;
+        }
+
+        const matchEp = seasonData?.episodes?.find(ep => Number(ep.episode_number) === Number(mediaItem.episode));
+        if (matchEp) {
+          mediaItem.episodeTitle = matchEp.title;
+        }
+      } catch (err) {
+        console.warn('Could not fetch TV season details in player loadMedia:', err);
+      }
+    } else {
+      const tvControls = this.wrapper.querySelector('#player-tv-controls');
+      if (tvControls) tvControls.classList.add('hidden');
     }
 
     this.mediaItem = mediaItem;
@@ -546,8 +657,26 @@ export class CustomPlayer {
 
     this.toggleLoading(true);
 
-    // Server 1: Native Cinestar Custom HTML5 Player with custom bottom control bar
-    if (this.currentServer === 1) {
+    // Servers 1 - 5: High-Definition Embedded Video Streams (VidLink, VidSrc, EmbedSu, VidSrc CC, YouTube)
+    if (this.currentServer >= 1 && this.currentServer <= 5) {
+      const embedUrl = this.getEmbedUrl(this.currentServer, this.mediaItem);
+      if (embedUrl) {
+        if (iframe) iframe.src = embedUrl;
+        if (iframeWrapper) iframeWrapper.classList.remove('hidden');
+        if (mainVideo) {
+          mainVideo.pause();
+          mainVideo.classList.add('hidden');
+        }
+        // Hide Cinestar's bottom control bar when using embedded players to prevent duplicate control bars
+        if (bottomBar) bottomBar.classList.add('hidden');
+
+        setTimeout(() => this.toggleLoading(false), 900);
+        return;
+      }
+    }
+
+    // Server 6: Native Cinestar Custom HTML5 MP4 Player with custom bottom control bar
+    if (this.currentServer === 6) {
       if (iframeWrapper) iframeWrapper.classList.add('hidden');
       if (iframe) iframe.src = '';
 
@@ -586,23 +715,6 @@ export class CustomPlayer {
             this.handleStreamError();
           });
         });
-        return;
-      }
-    }
-
-    // Servers 2 - 7: External Embed Sources
-    if (this.currentServer >= 2 && this.currentServer <= 7) {
-      const embedUrl = this.getEmbedUrl(this.currentServer, this.mediaItem);
-      if (embedUrl) {
-        if (iframe) iframe.src = embedUrl;
-        if (iframeWrapper) iframeWrapper.classList.remove('hidden');
-        if (mainVideo) {
-          mainVideo.pause();
-          mainVideo.classList.add('hidden');
-        }
-        if (bottomBar) bottomBar.classList.add('hidden');
-
-        setTimeout(() => this.toggleLoading(false), 1000);
         return;
       }
     }
@@ -848,18 +960,18 @@ export class CustomPlayer {
     const topBar = this.wrapper.querySelector('#player-top-bar');
     const bottomBar = this.wrapper.querySelector('#player-bottom-bar');
 
-    topBar.classList.remove('opacity-0');
-    bottomBar.classList.remove('opacity-0');
-    this.wrapper.querySelector('#player-viewport').style.cursor = 'default';
+    if (topBar) topBar.classList.remove('opacity-0', 'pointer-events-none');
+    if (bottomBar && this.currentServer === 8) bottomBar.classList.remove('opacity-0', 'pointer-events-none');
+    
+    const viewport = this.wrapper.querySelector('#player-viewport');
+    if (viewport) viewport.style.cursor = 'default';
 
     clearTimeout(this.hideControlsTimer);
-    if (!this.video.paused) {
-      this.hideControlsTimer = setTimeout(() => {
-        topBar.classList.add('opacity-0');
-        bottomBar.classList.add('opacity-0');
-        this.wrapper.querySelector('#player-viewport').style.cursor = 'none';
-      }, 3500);
-    }
+    this.hideControlsTimer = setTimeout(() => {
+      if (topBar) topBar.classList.add('opacity-0', 'pointer-events-none');
+      if (bottomBar) bottomBar.classList.add('opacity-0', 'pointer-events-none');
+      if (viewport) viewport.style.cursor = 'none';
+    }, 2500);
   }
 
   /**
@@ -906,7 +1018,7 @@ export class CustomPlayer {
    */
   handleStreamError() {
     this.toggleLoading(false);
-    const nextServer = ((this.currentServer || 1) % 7) + 1;
+    const nextServer = ((this.currentServer || 1) % 6) + 1;
     if (nextServer !== 1) {
       this.switchServer(nextServer);
     } else {
