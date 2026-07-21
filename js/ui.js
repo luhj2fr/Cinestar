@@ -148,12 +148,10 @@ export class UIManager {
     if (settingsForm) {
       settingsForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        const apiKey = document.getElementById('setting-api-key').value;
         const autoplay = document.getElementById('setting-autoplay').checked;
         const quality = document.getElementById('setting-quality').value;
 
         StorageManager.saveSettings({
-          tmdbApiKey: apiKey,
           autoplayNext: autoplay,
           defaultQuality: quality
         });
@@ -773,7 +771,6 @@ export class UIManager {
     if (!modal) return;
 
     const settings = StorageManager.getSettings();
-    document.getElementById('setting-api-key').value = settings.tmdbApiKey || '';
     document.getElementById('setting-autoplay').checked = settings.autoplayNext !== false;
     document.getElementById('setting-quality').value = settings.defaultQuality || '1080p';
 

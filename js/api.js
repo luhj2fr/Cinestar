@@ -405,8 +405,7 @@ export class MediaAPI {
    * Get active TMDb API Key
    */
   static getApiKey() {
-    const settings = StorageManager.getSettings();
-    return settings.tmdbApiKey && settings.tmdbApiKey.trim() !== '' ? settings.tmdbApiKey.trim() : DEFAULT_TMDB_API_KEY;
+    return DEFAULT_TMDB_API_KEY;
   }
 
   /**

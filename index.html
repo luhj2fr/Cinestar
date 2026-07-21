@@ -405,10 +405,18 @@
       </div>
 
       <form id="settings-form" class="flex flex-col gap-4">
-        <div>
-          <label class="block text-xs font-bold text-slate-300 mb-1">TMDb API Read Key (v3)</label>
-          <input id="setting-api-key" type="text" placeholder="Enter custom TMDb API Key" class="w-full px-4 py-2.5 rounded-xl bg-[#1e173e] border border-purple-500/30 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-400">
-          <p class="text-[10px] text-slate-400 mt-1">Provide your TMDb key for live global metadata fetching.</p>
+        <!-- Connection Status -->
+        <div class="p-3.5 rounded-2xl bg-[#1e173e] border border-emerald-500/30 flex items-center justify-between">
+          <div>
+            <span class="text-xs font-bold text-white block">TMDb Streaming Metadata</span>
+            <span class="text-[10px] text-emerald-300 font-semibold flex items-center gap-1.5 mt-0.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              Live Global API Active
+            </span>
+          </div>
+          <span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-mono font-bold border border-emerald-500/30">
+            ONLINE
+          </span>
         </div>
 
         <div class="flex items-center justify-between py-2 border-t border-b border-purple-500/20">
