@@ -145,9 +145,10 @@ export class CustomPlayer {
                 <option value="1" class="bg-[#0e0a24] text-white">Server 1 (VidSrc PRO)</option>
                 <option value="2" class="bg-[#0e0a24] text-white">Server 2 (VidLink HD)</option>
                 <option value="3" class="bg-[#0e0a24] text-white">Server 3 (EmbedSu 4K)</option>
-                <option value="4" class="bg-[#0e0a24] text-white">Server 4 (AutoEmbed)</option>
-                <option value="5" class="bg-[#0e0a24] text-white">Server 5 (2Embed)</option>
-                <option value="6" class="bg-[#0e0a24] text-white">Server 6 (HTML5 Video)</option>
+                <option value="4" class="bg-[#0e0a24] text-white">Server 4 (Official HD Feature / Trailer)</option>
+                <option value="5" class="bg-[#0e0a24] text-white">Server 5 (AutoEmbed)</option>
+                <option value="6" class="bg-[#0e0a24] text-white">Server 6 (2Embed)</option>
+                <option value="7" class="bg-[#0e0a24] text-white">Server 7 (VidSrc CC)</option>
               </select>
             </div>
 
@@ -449,6 +450,7 @@ export class CustomPlayer {
     const id = mediaItem.id || mediaItem.tmdb_id || 157336;
     const s = mediaItem.season || 1;
     const e = mediaItem.episode || 1;
+    const trailerKey = mediaItem.trailer_key || 'uYPbbksJxIg';
 
     switch (Number(serverIndex)) {
       case 1:
@@ -464,13 +466,19 @@ export class CustomPlayer {
           ? `https://embed.su/embed/tv/${id}/${s}/${e}`
           : `https://embed.su/embed/movie/${id}`;
       case 4:
+        return `https://www.youtube.com/embed/${trailerKey}?autoplay=1&controls=1&modestbranding=1&rel=0&enablejsapi=1`;
+      case 5:
         return type === 'tv'
           ? `https://player.autoembed.cc/embed/tv/${id}/${s}/${e}`
           : `https://player.autoembed.cc/embed/movie/${id}`;
-      case 5:
+      case 6:
         return type === 'tv'
           ? `https://www.2embed.cc/embedtv/${id}&s=${s}&e=${e}`
           : `https://www.2embed.cc/embed/${id}`;
+      case 7:
+        return type === 'tv'
+          ? `https://vidsrc.cc/v2/embed/tv/${id}/${s}/${e}`
+          : `https://vidsrc.cc/v2/embed/movie/${id}`;
       default:
         return null;
     }
@@ -479,15 +487,35 @@ export class CustomPlayer {
   /**
    * Load and play a media item
    */
-  loadMedia(mediaItem, resumeTime = 0) {
-    this.mediaItem = mediaItem;
-    this.currentServer = 1;
+  async loadMedia(mediaItem, resumeTime = 0) {
+    if (!mediaItem) return;
+
+    this.wrapper.classList.remove('opacity-0', 'pointer-events-none');
+    this.wrapper.classList.add('opacity-100', 'pointer-events-auto');
+    this.toggleLoading(true);
 
     const errorOverlay = this.wrapper.querySelector('#player-error-overlay');
     if (errorOverlay) errorOverlay.classList.add('hidden');
 
-    this.wrapper.classList.remove('opacity-0', 'pointer-events-none');
-    this.wrapper.classList.add('opacity-100', 'pointer-events-auto');
+    // Fetch full details via TMDb API to guarantee we have exact trailer_key, videos, IMDb ID, and metadata
+    if (!mediaItem.trailer_key || !mediaItem.imdb_id) {
+      try {
+        const fullDetails = await MediaAPI.getDetails(mediaItem.id || 157336, mediaItem.type || 'movie');
+        if (fullDetails) {
+          mediaItem = {
+            ...fullDetails,
+            ...mediaItem,
+            trailer_key: fullDetails.trailer_key || mediaItem.trailer_key,
+            imdb_id: fullDetails.imdb_id || mediaItem.imdb_id
+          };
+        }
+      } catch (err) {
+        console.warn('MediaAPI: Could not fetch additional TMDb video details:', err);
+      }
+    }
+
+    this.mediaItem = mediaItem;
+    this.currentServer = 1;
 
     // Title setup
     const titleEl = this.wrapper.querySelector('#player-media-title');
@@ -522,7 +550,7 @@ export class CustomPlayer {
 
     this.toggleLoading(true);
 
-    if (this.currentServer >= 1 && this.currentServer <= 5) {
+    if (this.currentServer >= 1 && this.currentServer <= 7) {
       const embedUrl = this.getEmbedUrl(this.currentServer, this.mediaItem);
       if (embedUrl) {
         if (iframe) iframe.src = embedUrl;
@@ -533,47 +561,12 @@ export class CustomPlayer {
         }
         if (bottomBar) bottomBar.classList.add('hidden');
 
-        setTimeout(() => this.toggleLoading(false), 1200);
+        setTimeout(() => this.toggleLoading(false), 1000);
         return;
       }
     }
 
-    // Server 6: HTML5 Video Mode
-    if (iframeWrapper) iframeWrapper.classList.add('hidden');
-    if (iframe) iframe.src = '';
-    if (mainVideo) {
-      mainVideo.classList.remove('hidden');
-      if (bottomBar) bottomBar.classList.remove('hidden');
-
-      const fallbackStreams = [
-        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-        'https://vjs.zencdn.net/v/oceans.mp4',
-        'https://media.w3.org/2010/05/sintel/trailer.mp4',
-        'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
-        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4'
-      ];
-
-      const streamUrl = this.mediaItem?.stream_url || fallbackStreams[0];
-      mainVideo.src = streamUrl;
-      mainVideo.load();
-
-      const settings = StorageManager.getSettings();
-      mainVideo.volume = settings.volume || 0.8;
-      mainVideo.playbackRate = 1.0;
-
-      mainVideo.play().then(() => {
-        this.toggleLoading(false);
-        this.updatePlayPauseIcons(true);
-      }).catch(() => {
-        mainVideo.muted = true;
-        mainVideo.play().then(() => {
-          this.toggleLoading(false);
-          this.updatePlayPauseIcons(true);
-        }).catch(() => {
-          this.handleStreamError();
-        });
-      });
-    }
+    this.handleStreamError();
   }
 
   /**
@@ -872,11 +865,11 @@ export class CustomPlayer {
    */
   handleStreamError() {
     this.toggleLoading(false);
-    const nextServer = ((this.currentServer || 1) % 6) + 1;
+    const nextServer = ((this.currentServer || 1) % 7) + 1;
     if (nextServer !== 1) {
       this.switchServer(nextServer);
     } else {
-      this.showErrorOverlay('Unable to load video stream from current server. You can switch servers using the dropdown above or watch the official HD trailer below.');
+      this.showErrorOverlay('Unable to load video stream from current server. You can switch servers using the dropdown above or watch the official HD feature/trailer below.');
     }
   }
 
