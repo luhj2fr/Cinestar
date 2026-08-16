@@ -158,14 +158,14 @@ export class CustomPlayer {
               <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#181236]/90 border border-purple-500/40 backdrop-blur-xl shadow-xl">
                 <span class="text-[10px] font-black text-emerald-400 uppercase tracking-wider hidden sm:inline">Server:</span>
                 <select id="player-server-select" class="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer">
-                  <option value="1" class="bg-[#0e0a24] text-white">Server 1 (Cinestar HTML5 MP4 - Instant Fast)</option>
-                  <option value="2" class="bg-[#0e0a24] text-white">Server 2 (VidLink PRO 4K - Primary)</option>
-                  <option value="3" class="bg-[#0e0a24] text-white">Server 3 (MultiEmbed Fast Stream)</option>
-                  <option value="4" class="bg-[#0e0a24] text-white">Server 4 (VidSrc Multi-Cloud HD)</option>
-                  <option value="5" class="bg-[#0e0a24] text-white">Server 5 (EmbedSu 4K Ultra)</option>
-                  <option value="6" class="bg-[#0e0a24] text-white">Server 6 (AutoEmbed Fast)</option>
-                  <option value="7" class="bg-[#0e0a24] text-white">Server 7 (SmashyStream Ultra HD)</option>
-                  <option value="8" class="bg-[#0e0a24] text-white">Server 8 (VidSrc CC Cloud Stream)</option>
+                  <option value="1" class="bg-[#0e0a24] text-white">Server 1 (VidLink PRO 4K - Primary Fast)</option>
+                  <option value="2" class="bg-[#0e0a24] text-white">Server 2 (MultiEmbed Fast Stream)</option>
+                  <option value="3" class="bg-[#0e0a24] text-white">Server 3 (VidSrc VIP Ultra HD)</option>
+                  <option value="4" class="bg-[#0e0a24] text-white">Server 4 (EmbedSu 4K Cinema)</option>
+                  <option value="5" class="bg-[#0e0a24] text-white">Server 5 (AutoEmbed Fast Stream)</option>
+                  <option value="6" class="bg-[#0e0a24] text-white">Server 6 (SmashyStream Ultra HD)</option>
+                  <option value="7" class="bg-[#0e0a24] text-white">Server 7 (MoviesAPI Club HD)</option>
+                  <option value="8" class="bg-[#0e0a24] text-white">Server 8 (VidSrc CC Cloud)</option>
                   <option value="9" class="bg-[#0e0a24] text-white">Server 9 (Official HD Feature / Trailer)</option>
                 </select>
               </div>
@@ -567,38 +567,43 @@ export class CustomPlayer {
     const trailerKey = mediaItem.trailer_key || 'uYPbbksJxIg';
 
     switch (Number(serverIndex)) {
-      case 2:
-        // Server 2: VidLink HD PRO
+      case 1:
+        // Server 1: VidLink PRO 4K (Primary Fast Stream with custom theme)
         return type === 'tv'
           ? `https://vidlink.pro/tv/${id}/${s}/${e}?primaryColor=a855f7&secondaryColor=10b981&iconColor=ffffff&autoplay=true`
           : `https://vidlink.pro/movie/${id}?primaryColor=a855f7&secondaryColor=10b981&iconColor=ffffff&autoplay=true`;
-      case 3:
-        // Server 3: MultiEmbed Fast Stream (Auto CDN selection - very fast)
+      case 2:
+        // Server 2: MultiEmbed Fast Stream (Auto CDN selection - very fast)
         return type === 'tv'
           ? `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${s}&e=${e}`
           : `https://multiembed.mov/?video_id=${id}&tmdb=1`;
-      case 4:
-        // Server 4: VidSrc Multi-Cloud HD (vidsrc.xyz / vidsrc.pro)
+      case 3:
+        // Server 3: VidSrc VIP Ultra HD (vidsrc.xyz)
         return type === 'tv'
           ? `https://vidsrc.xyz/embed/tv?tmdb=${id}&season=${s}&episode=${e}`
           : `https://vidsrc.xyz/embed/movie?tmdb=${id}`;
-      case 5:
-        // Server 5: EmbedSu 4K Ultra
+      case 4:
+        // Server 4: EmbedSu 4K Cinema
         return type === 'tv'
           ? `https://embed.su/embed/tv/${id}/${s}/${e}`
           : `https://embed.su/embed/movie/${id}`;
-      case 6:
-        // Server 6: AutoEmbed Fast Stream
+      case 5:
+        // Server 5: AutoEmbed Fast Stream
         return type === 'tv'
           ? `https://player.autoembed.cc/embed/tv/${id}/${s}/${e}`
           : `https://player.autoembed.cc/embed/movie/${id}`;
-      case 7:
-        // Server 7: SmashyStream Ultra HD
+      case 6:
+        // Server 6: SmashyStream Ultra HD
         return type === 'tv'
           ? `https://player.smashy.stream/tv/${id}?s=${s}&e=${e}`
           : `https://player.smashy.stream/movie/${id}`;
+      case 7:
+        // Server 7: MoviesAPI Club HD
+        return type === 'tv'
+          ? `https://moviesapi.club/tv/${id}-${s}-${e}`
+          : `https://moviesapi.club/movie/${id}`;
       case 8:
-        // Server 8: VidSrc CC Cloud Stream
+        // Server 8: VidSrc CC Cloud
         return type === 'tv'
           ? `https://vidsrc.cc/v2/embed/tv/${id}/${s}/${e}`
           : `https://vidsrc.cc/v2/embed/movie/${id}`;
@@ -606,7 +611,9 @@ export class CustomPlayer {
         // Server 9: Official YouTube Feature / Trailer HD
         return `https://www.youtube.com/embed/${trailerKey}?autoplay=1&controls=1&modestbranding=1&rel=0&enablejsapi=1`;
       default:
-        return null;
+        return type === 'tv'
+          ? `https://vidlink.pro/tv/${id}/${s}/${e}?primaryColor=a855f7&secondaryColor=10b981&iconColor=ffffff&autoplay=true`
+          : `https://vidlink.pro/movie/${id}?primaryColor=a855f7&secondaryColor=10b981&iconColor=ffffff&autoplay=true`;
     }
   }
 
@@ -712,16 +719,18 @@ export class CustomPlayer {
    * Play stream using selected server
    */
   playServer(serverIndex) {
-    this.currentServer = Number(serverIndex);
+    this.currentServer = Number(serverIndex) || 1;
     const iframeWrapper = this.wrapper.querySelector('#embed-iframe-wrapper');
     const iframe = this.wrapper.querySelector('#embed-iframe-element');
     const mainVideo = this.video;
     const bottomBar = this.wrapper.querySelector('#player-bottom-bar');
+    const errorOverlay = this.wrapper.querySelector('#player-error-overlay');
+    if (errorOverlay) errorOverlay.classList.add('hidden');
 
     this.toggleLoading(true);
 
-    // Server 1: Native Cinestar Custom HTML5 MP4 Player with custom bottom control bar
-    if (this.currentServer === 1) {
+    // Direct standalone stream URL if explicitly provided (e.g. direct mp4 or custom file upload)
+    if (this.mediaItem?.stream_url && typeof this.mediaItem.stream_url === 'string' && (this.mediaItem.stream_url.endsWith('.mp4') || this.mediaItem.stream_url.endsWith('.webm') || this.mediaItem.stream_url.startsWith('blob:'))) {
       if (iframeWrapper) iframeWrapper.classList.add('hidden');
       if (iframe) iframe.src = '';
 
@@ -729,28 +738,7 @@ export class CustomPlayer {
         mainVideo.classList.remove('hidden');
         if (bottomBar) bottomBar.classList.remove('hidden');
 
-        const fallbackStreams = [
-          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
-          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyplays.mp4',
-          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
-          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
-          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreet.mp4',
-          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
-          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4',
-          'https://vjs.zencdn.net/v/oceans.mp4',
-          'https://media.w3.org/2010/05/sintel/trailer.mp4',
-          'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4'
-        ];
-
-        const idNum = Math.abs(this.mediaItem?.id || 0) + (this.mediaItem?.season || 0) * 10 + (this.mediaItem?.episode || 0);
-        const streamIndex = idNum % fallbackStreams.length;
-        const streamUrl = this.mediaItem?.stream_url || fallbackStreams[streamIndex];
-
-        mainVideo.src = streamUrl;
+        mainVideo.src = this.mediaItem.stream_url;
         mainVideo.load();
 
         const settings = StorageManager.getSettings();
@@ -774,31 +762,32 @@ export class CustomPlayer {
       }
     }
 
-    // Servers 2 - 9: High-Definition Embedded Video Streams (VidLink, MultiEmbed, VidSrc, EmbedSu, AutoEmbed, SmashyStream, VidSrc CC, YouTube)
-    if (this.currentServer >= 2 && this.currentServer <= 9) {
-      const embedUrl = this.getEmbedUrl(this.currentServer, this.mediaItem);
-      if (embedUrl) {
-        if (iframe) {
-          iframe.onload = () => {
-            this.toggleLoading(false);
-          };
-          if (iframe.src !== embedUrl) {
-            iframe.src = embedUrl;
-          }
-        }
-
-        if (iframeWrapper) iframeWrapper.classList.remove('hidden');
-        if (mainVideo) {
-          mainVideo.pause();
-          mainVideo.classList.add('hidden');
-        }
-        // Hide Cinestar's bottom control bar when using embedded players to prevent duplicate control bars
-        if (bottomBar) bottomBar.classList.add('hidden');
-
-        // Safety fallback timer to hide spinner fast
-        setTimeout(() => this.toggleLoading(false), 800);
-        return;
+    // High-Definition Embedded Video Streams (Servers 1 through 9)
+    const embedUrl = this.getEmbedUrl(this.currentServer, this.mediaItem);
+    if (embedUrl) {
+      if (mainVideo) {
+        mainVideo.pause();
+        mainVideo.classList.add('hidden');
       }
+      if (bottomBar) bottomBar.classList.add('hidden');
+
+      if (iframe) {
+        iframe.onload = () => {
+          this.toggleLoading(false);
+        };
+        iframe.onerror = () => {
+          this.handleStreamError();
+        };
+        if (iframe.src !== embedUrl) {
+          iframe.src = embedUrl;
+        }
+      }
+
+      if (iframeWrapper) iframeWrapper.classList.remove('hidden');
+
+      // Safety fallback timer to hide spinner fast
+      setTimeout(() => this.toggleLoading(false), 800);
+      return;
     }
 
     this.handleStreamError();
@@ -1052,7 +1041,8 @@ export class CustomPlayer {
       topBar.classList.add('opacity-100');
     }
 
-    if (this.currentServer === 1) {
+    const isDirectVideo = this.video && !this.video.classList.contains('hidden');
+    if (isDirectVideo) {
       if (bottomBar) {
         bottomBar.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
         bottomBar.classList.add('opacity-100');
