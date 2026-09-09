@@ -54,7 +54,7 @@ export class CustomPlayer {
       <div class="relative w-full h-full flex flex-col justify-between overflow-hidden group/player" id="player-viewport">
         <!-- Embed Stream Iframe Container -->
         <div id="embed-iframe-wrapper" class="absolute inset-0 w-full h-full bg-black z-10 flex items-center justify-center">
-          <iframe id="embed-iframe-element" class="w-full h-full border-0" allow="autoplay; encrypted-media; fullscreen; picture-in-picture; display-capture; accelerometer; gyroscope" allowfullscreen loading="eager" referrerpolicy="no-referrer-when-downgrade" style="will-change: transform; transform: translateZ(0); display: block;"></iframe>
+          <iframe id="embed-iframe-element" class="w-full h-full border-0" allow="autoplay; encrypted-media; fullscreen; picture-in-picture; display-capture; accelerometer; gyroscope; clipboard-write; web-share" allowfullscreen loading="eager" referrerpolicy="no-referrer" style="will-change: transform; transform: translateZ(0); display: block;"></iframe>
         </div>
 
         <!-- Video Element -->
@@ -158,15 +158,16 @@ export class CustomPlayer {
               <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#181236]/90 border border-purple-500/40 backdrop-blur-xl shadow-xl">
                 <span class="text-[10px] font-black text-emerald-400 uppercase tracking-wider hidden sm:inline">Server:</span>
                 <select id="player-server-select" class="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer">
-                  <option value="1" class="bg-[#0e0a24] text-white">Server 1 (VidLink PRO 4K - Primary Fast)</option>
+                  <option value="1" class="bg-[#0e0a24] text-white">Server 1 (VidLink PRO 4K - Primary)</option>
                   <option value="2" class="bg-[#0e0a24] text-white">Server 2 (MultiEmbed Fast Stream)</option>
                   <option value="3" class="bg-[#0e0a24] text-white">Server 3 (VidSrc VIP Ultra HD)</option>
                   <option value="4" class="bg-[#0e0a24] text-white">Server 4 (EmbedSu 4K Cinema)</option>
                   <option value="5" class="bg-[#0e0a24] text-white">Server 5 (AutoEmbed Fast Stream)</option>
                   <option value="6" class="bg-[#0e0a24] text-white">Server 6 (SmashyStream Ultra HD)</option>
                   <option value="7" class="bg-[#0e0a24] text-white">Server 7 (MoviesAPI Club HD)</option>
-                  <option value="8" class="bg-[#0e0a24] text-white">Server 8 (VidSrc CC Cloud)</option>
+                  <option value="8" class="bg-[#0e0a24] text-white">Server 8 (2Embed Stream Cloud)</option>
                   <option value="9" class="bg-[#0e0a24] text-white">Server 9 (Official HD Feature / Trailer)</option>
+                  <option value="10" class="bg-[#0e0a24] text-white">Server 10 (Direct Cinestar Player)</option>
                 </select>
               </div>
               <button id="player-next-server-btn" title="Quick Switch to Next Fast Server" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-purple-600/80 to-emerald-600/80 hover:from-purple-500 hover:to-emerald-500 text-white border border-purple-400/40 text-xs font-black transition-all hover:scale-105 shadow-xl backdrop-blur-xl">
@@ -325,7 +326,7 @@ export class CustomPlayer {
     this.video.addEventListener('error', (e) => {
       if (!this.video.getAttribute('src') || this.video.src === window.location.href) return;
       console.warn('Video element error caught:', e);
-      this.handleStreamError();
+      this.toggleLoading(false);
     });
 
     const serverSelect = this.wrapper.querySelector('#player-server-select');
@@ -413,9 +414,7 @@ export class CustomPlayer {
     if (watchTrailerBtn) {
       watchTrailerBtn.addEventListener('click', () => {
         errorOverlay.classList.add('hidden');
-        const trailerKey = this.mediaItem?.trailer_key || 'YoHD9XEInc0';
-        this.close();
-        window.dispatchEvent(new CustomEvent('open-trailer-event', { detail: trailerKey }));
+        this.switchServer(9);
       });
     }
 
@@ -603,13 +602,13 @@ export class CustomPlayer {
           ? `https://moviesapi.club/tv/${id}-${s}-${e}`
           : `https://moviesapi.club/movie/${id}`;
       case 8:
-        // Server 8: VidSrc CC Cloud
+        // Server 8: 2Embed Stream Cloud
         return type === 'tv'
-          ? `https://vidsrc.cc/v2/embed/tv/${id}/${s}/${e}`
-          : `https://vidsrc.cc/v2/embed/movie/${id}`;
+          ? `https://www.2embed.cc/embedtv/${id}&s=${s}&e=${e}`
+          : `https://www.2embed.cc/embed/${id}`;
       case 9:
         // Server 9: Official YouTube Feature / Trailer HD
-        return `https://www.youtube.com/embed/${trailerKey}?autoplay=1&controls=1&modestbranding=1&rel=0&enablejsapi=1`;
+        return `https://www.youtube-nocookie.com/embed/${trailerKey}?autoplay=1&controls=1&modestbranding=1&rel=0&enablejsapi=1`;
       default:
         return type === 'tv'
           ? `https://vidlink.pro/tv/${id}/${s}/${e}?primaryColor=a855f7&secondaryColor=10b981&iconColor=ffffff&autoplay=true`
@@ -713,6 +712,19 @@ export class CustomPlayer {
 
     this.playServer(1);
     this.resetControlsTimer();
+
+    // Show Skip Intro button for opening sequence so user can skip intro anytime
+    const skipIntroBtn = this.wrapper.querySelector('#skip-intro-btn');
+    if (skipIntroBtn) {
+      skipIntroBtn.classList.remove('hidden');
+      skipIntroBtn.classList.add('flex');
+      setTimeout(() => {
+        if (!this.introSkipped && skipIntroBtn) {
+          skipIntroBtn.classList.add('hidden');
+          skipIntroBtn.classList.remove('flex');
+        }
+      }, 25000);
+    }
   }
 
   /**
@@ -729,8 +741,14 @@ export class CustomPlayer {
 
     this.toggleLoading(true);
 
-    // Direct standalone stream URL if explicitly provided (e.g. direct mp4 or custom file upload)
-    if (this.mediaItem?.stream_url && typeof this.mediaItem.stream_url === 'string' && (this.mediaItem.stream_url.endsWith('.mp4') || this.mediaItem.stream_url.endsWith('.webm') || this.mediaItem.stream_url.startsWith('blob:'))) {
+    // Sync dropdown value
+    const serverSelect = this.wrapper.querySelector('#player-server-select');
+    if (serverSelect && serverSelect.value !== String(this.currentServer)) {
+      serverSelect.value = String(this.currentServer);
+    }
+
+    // Server 10: Cinestar Native HTML5 Video Player (Direct MP4 / WebM / Blob or high quality preview)
+    if (this.currentServer === 10) {
       if (iframeWrapper) iframeWrapper.classList.add('hidden');
       if (iframe) iframe.src = '';
 
@@ -738,7 +756,11 @@ export class CustomPlayer {
         mainVideo.classList.remove('hidden');
         if (bottomBar) bottomBar.classList.remove('hidden');
 
-        mainVideo.src = this.mediaItem.stream_url;
+        const directUrl = (this.mediaItem?.stream_url && typeof this.mediaItem.stream_url === 'string')
+          ? this.mediaItem.stream_url
+          : 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4';
+
+        mainVideo.src = directUrl;
         mainVideo.load();
 
         const settings = StorageManager.getSettings();
@@ -754,43 +776,43 @@ export class CustomPlayer {
           mainVideo.play().then(() => {
             this.toggleLoading(false);
             this.updatePlayPauseIcons(true);
-          }).catch(() => {
-            this.handleStreamError();
+          }).catch((err) => {
+            console.warn('HTML5 direct video playback paused or restricted:', err);
+            this.toggleLoading(false);
           });
         });
         return;
       }
     }
 
-    // High-Definition Embedded Video Streams (Servers 1 through 9)
+    // Embedded High-Definition Video Streams (Servers 1 through 9)
     const embedUrl = this.getEmbedUrl(this.currentServer, this.mediaItem);
     if (embedUrl) {
       if (mainVideo) {
         mainVideo.pause();
+        mainVideo.removeAttribute('src');
         mainVideo.classList.add('hidden');
       }
       if (bottomBar) bottomBar.classList.add('hidden');
+
+      if (iframeWrapper) iframeWrapper.classList.remove('hidden');
 
       if (iframe) {
         iframe.onload = () => {
           this.toggleLoading(false);
         };
-        iframe.onerror = () => {
-          this.handleStreamError();
-        };
+        // Do not attach onerror that cascades through servers and pops up errors
         if (iframe.src !== embedUrl) {
           iframe.src = embedUrl;
         }
       }
 
-      if (iframeWrapper) iframeWrapper.classList.remove('hidden');
-
-      // Safety fallback timer to hide spinner fast
-      setTimeout(() => this.toggleLoading(false), 800);
+      // Smooth safety dismiss of loading spinner
+      setTimeout(() => this.toggleLoading(false), 900);
       return;
     }
 
-    this.handleStreamError();
+    this.toggleLoading(false);
   }
 
   /**
@@ -938,8 +960,8 @@ export class CustomPlayer {
     const skipIntroBtn = this.wrapper.querySelector('#skip-intro-btn');
     const skipCreditsBtn = this.wrapper.querySelector('#skip-credits-btn');
 
-    // Show Skip Intro during first 90 seconds
-    if (currentTime >= 10 && currentTime <= 90) {
+    // Show Skip Intro during first 90 seconds if not yet skipped
+    if (!this.introSkipped && currentTime >= 3 && currentTime <= 90) {
       skipIntroBtn.classList.remove('hidden');
       skipIntroBtn.classList.add('flex');
     } else {
@@ -947,8 +969,8 @@ export class CustomPlayer {
       skipIntroBtn.classList.remove('flex');
     }
 
-    // Show Skip Credits in the final 2 minutes
-    if (duration - currentTime <= 120 && duration - currentTime >= 10) {
+    // Show Skip Credits in the final 2 minutes if not yet skipped
+    if (!this.creditsSkipped && duration && (duration - currentTime <= 120) && (duration - currentTime >= 10)) {
       skipCreditsBtn.classList.remove('hidden');
       skipCreditsBtn.classList.add('flex');
     } else {
@@ -1047,20 +1069,23 @@ export class CustomPlayer {
         bottomBar.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
         bottomBar.classList.add('opacity-100');
       }
-      if (viewport) viewport.style.cursor = 'default';
-
-      clearTimeout(this.hideControlsTimer);
-      this.hideControlsTimer = setTimeout(() => {
-        if (bottomBar) {
-          bottomBar.classList.remove('opacity-100');
-          bottomBar.classList.add('opacity-0', 'pointer-events-none');
-        }
-        if (viewport) viewport.style.cursor = 'none';
-      }, 3500);
     } else {
       if (bottomBar) bottomBar.classList.add('hidden');
-      if (viewport) viewport.style.cursor = 'default';
     }
+    if (viewport) viewport.style.cursor = 'default';
+
+    clearTimeout(this.hideControlsTimer);
+    this.hideControlsTimer = setTimeout(() => {
+      if (topBar) {
+        topBar.classList.remove('opacity-100');
+        topBar.classList.add('opacity-0', 'pointer-events-none');
+      }
+      if (bottomBar && isDirectVideo) {
+        bottomBar.classList.remove('opacity-100');
+        bottomBar.classList.add('opacity-0', 'pointer-events-none');
+      }
+      if (viewport) viewport.style.cursor = 'none';
+    }, 3500);
   }
 
   /**
@@ -1103,16 +1128,11 @@ export class CustomPlayer {
   }
 
   /**
-   * Handle video stream loading failure
+   * Handle video stream notice safely without disruptive infinite popups
    */
   handleStreamError() {
     this.toggleLoading(false);
-    const nextServer = ((this.currentServer || 1) % 9) + 1;
-    if (nextServer !== 1) {
-      this.switchServer(nextServer);
-    } else {
-      this.showErrorOverlay('Unable to load video stream from current server. You can switch servers using the dropdown above or watch the official HD feature/trailer below.');
-    }
+    console.warn('Stream notice on server', this.currentServer);
   }
 
   /**

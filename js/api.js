@@ -75,7 +75,6 @@ const OFFLINE_MEDIA_DATABASE = [
       { id: 13636, name: 'Lena Headey', character: 'Cersei Lannister', profile_path: 'https://image.tmdb.org/t/p/w185/5431s.jpg' }
     ],
     trailer_key: 'KPLWWIOCOOQ',
-    stream_url: SAMPLE_STREAMS[0],
     match_score: 99,
     age_rating: 'TV-MA',
     badge: 'HBO ORIGINAL',
@@ -85,11 +84,11 @@ const OFFLINE_MEDIA_DATABASE = [
         name: 'Season 1',
         episode_count: 10,
         episodes: [
-          { episode_number: 1, title: 'Winter Is Coming', overview: 'Jon Arryn, the Hand of the King, is dead. King Robert Baratheon travels north to Winterfell to ask his old friend Eddard "Ned" Stark to take his place.', runtime: 62, air_date: '2011-04-17', still_path: 'https://image.tmdb.org/t/p/w500/2OMB0yKqA2A9P3y8O3fB3f.jpg', stream_url: SAMPLE_STREAMS[0], skip_intro: { start: 10, end: 100 }, skip_credits: { start: 3500, end: 3720 } },
-          { episode_number: 2, title: 'The Kingsroad', overview: 'While Bran recovers from his fall, Ned leaves Winterfell with his daughters Sansa and Arya for King\'s Landing.', runtime: 56, air_date: '2011-04-24', still_path: 'https://image.tmdb.org/t/p/w500/1XS1oqL89v2Ukko83C9R28ByA30.jpg', stream_url: SAMPLE_STREAMS[1] },
-          { episode_number: 3, title: 'Lord Snow', overview: 'Ned arrives in King\'s Landing and learns of the Crown\'s financial recklessness. Jon Snow begins his training at the Wall.', runtime: 58, air_date: '2011-05-01', still_path: 'https://image.tmdb.org/t/p/w500/pbrL136mYgK5eB3Sbf9sYx4dO5m.jpg', stream_url: SAMPLE_STREAMS[2] },
-          { episode_number: 4, title: 'Cripples, Bastards, and Broken Things', overview: 'Ned investigates Jon Arryn\'s final days. Catelyn captures Tyrion Lannister at an inn.', runtime: 56, air_date: '2011-05-08', still_path: 'https://image.tmdb.org/t/p/w500/s3T1311oA8h32R3S393.jpg', stream_url: SAMPLE_STREAMS[3] },
-          { episode_number: 5, title: 'The Wolf and the Lion', overview: 'Robert orders a strike on Daenerys. Ned refuses to take part and resigns as Hand.', runtime: 55, air_date: '2011-05-15', still_path: 'https://image.tmdb.org/t/p/w500/1pdfLPoA6S3C3sL932S.jpg', stream_url: SAMPLE_STREAMS[4] }
+          { episode_number: 1, title: 'Winter Is Coming', overview: 'Jon Arryn, the Hand of the King, is dead. King Robert Baratheon travels north to Winterfell to ask his old friend Eddard "Ned" Stark to take his place.', runtime: 62, air_date: '2011-04-17', still_path: 'https://image.tmdb.org/t/p/w500/2OMB0yKqA2A9P3y8O3fB3f.jpg', skip_intro: { start: 10, end: 100 }, skip_credits: { start: 3500, end: 3720 } },
+          { episode_number: 2, title: 'The Kingsroad', overview: 'While Bran recovers from his fall, Ned leaves Winterfell with his daughters Sansa and Arya for King\'s Landing.', runtime: 56, air_date: '2011-04-24', still_path: 'https://image.tmdb.org/t/p/w500/1XS1oqL89v2Ukko83C9R28ByA30.jpg' },
+          { episode_number: 3, title: 'Lord Snow', overview: 'Ned arrives in King\'s Landing and learns of the Crown\'s financial recklessness. Jon Snow begins his training at the Wall.', runtime: 58, air_date: '2011-05-01', still_path: 'https://image.tmdb.org/t/p/w500/pbrL136mYgK5eB3Sbf9sYx4dO5m.jpg' },
+          { episode_number: 4, title: 'Cripples, Bastards, and Broken Things', overview: 'Ned investigates Jon Arryn\'s final days. Catelyn captures Tyrion Lannister at an inn.', runtime: 56, air_date: '2011-05-08', still_path: 'https://image.tmdb.org/t/p/w500/s3T1311oA8h32R3S393.jpg' },
+          { episode_number: 5, title: 'The Wolf and the Lion', overview: 'Robert orders a strike on Daenerys. Ned refuses to take part and resigns as Hand.', runtime: 55, air_date: '2011-05-15', still_path: 'https://image.tmdb.org/t/p/w500/1pdfLPoA6S3C3sL932S.jpg' }
         ]
       },
       {
@@ -97,7 +96,7 @@ const OFFLINE_MEDIA_DATABASE = [
         name: 'Season 2',
         episode_count: 10,
         episodes: [
-          { episode_number: 1, title: 'The North Remembers', overview: 'Tyrion arrives in King\'s Landing to act as Hand of the King. Stannis Baratheon plans his claim to the throne.', runtime: 53, air_date: '2012-04-01', still_path: 'https://image.tmdb.org/t/p/w500/2OMB0yKqA2A9P3y8O3fB3f.jpg', stream_url: SAMPLE_STREAMS[5] }
+          { episode_number: 1, title: 'The North Remembers', overview: 'Tyrion arrives in King\'s Landing to act as Hand of the King. Stannis Baratheon plans his claim to the throne.', runtime: 53, air_date: '2012-04-01', still_path: 'https://image.tmdb.org/t/p/w500/2OMB0yKqA2A9P3y8O3fB3f.jpg' }
         ]
       }
     ]
@@ -131,7 +130,6 @@ const OFFLINE_MEDIA_DATABASE = [
       { id: 139135, name: 'Olivia Cooke', character: 'Alicent Hightower' }
     ],
     trailer_key: 'DotnJ7tTA34',
-    stream_url: SAMPLE_STREAMS[1],
     match_score: 98,
     age_rating: 'TV-MA',
     badge: 'HBO ORIGINAL',
@@ -141,9 +139,9 @@ const OFFLINE_MEDIA_DATABASE = [
         name: 'Season 1',
         episode_count: 10,
         episodes: [
-          { episode_number: 1, title: 'The Heirs of the Dragon', overview: 'Viserys hosts a tournament to celebrate the birth of his second child. Rhaenyra welcomes her uncle Daemon back to the Red Keep.', runtime: 66, air_date: '2022-08-21', still_path: 'https://image.tmdb.org/t/p/w500/et311oA8h32R3S393.jpg', stream_url: SAMPLE_STREAMS[1], skip_intro: { start: 10, end: 85 } },
-          { episode_number: 2, title: 'The Rogue Prince', overview: 'Rhaenyra steps in at a Small Council meeting. Daemon occupies Dragonstone with his gold cloaks.', runtime: 54, air_date: '2022-08-28', still_path: 'https://image.tmdb.org/t/p/w500/1X4vh2C2R33T11o.jpg', stream_url: SAMPLE_STREAMS[2] },
-          { episode_number: 3, title: 'Second of His Name', overview: 'Daemon and the Sea Snake fight the Crabfeeder at the Stepstones. Viserys plans a royal hunt.', runtime: 63, air_date: '2022-09-04', still_path: 'https://image.tmdb.org/t/p/w500/pbrL136mYgK5eB3Sbf9sYx4dO5m.jpg', stream_url: SAMPLE_STREAMS[3] }
+          { episode_number: 1, title: 'The Heirs of the Dragon', overview: 'Viserys hosts a tournament to celebrate the birth of his second child. Rhaenyra welcomes her uncle Daemon back to the Red Keep.', runtime: 66, air_date: '2022-08-21', still_path: 'https://image.tmdb.org/t/p/w500/et311oA8h32R3S393.jpg', skip_intro: { start: 10, end: 85 } },
+          { episode_number: 2, title: 'The Rogue Prince', overview: 'Rhaenyra steps in at a Small Council meeting. Daemon occupies Dragonstone with his gold cloaks.', runtime: 54, air_date: '2022-08-28', still_path: 'https://image.tmdb.org/t/p/w500/1X4vh2C2R33T11o.jpg' },
+          { episode_number: 3, title: 'Second of His Name', overview: 'Daemon and the Sea Snake fight the Crabfeeder at the Stepstones. Viserys plans a royal hunt.', runtime: 63, air_date: '2022-09-04', still_path: 'https://image.tmdb.org/t/p/w500/pbrL136mYgK5eB3Sbf9sYx4dO5m.jpg' }
         ]
       }
     ]
@@ -176,8 +174,7 @@ const OFFLINE_MEDIA_DATABASE = [
       { id: 2222, name: 'Ayo Edebiri', character: 'Sydney Adamu' },
       { id: 3333, name: 'Ebon Moss-Bachrach', character: 'Richard "Richie" Jerimovich' }
     ],
-    trailer_key: 'gB9P3y8O3fB.jpg',
-    stream_url: SAMPLE_STREAMS[2],
+    trailer_key: 'y-cqqAJI-7s',
     match_score: 99,
     age_rating: 'TV-MA',
     badge: 'FX EXCLUSIVE',
@@ -187,8 +184,8 @@ const OFFLINE_MEDIA_DATABASE = [
         name: 'Season 1',
         episode_count: 8,
         episodes: [
-          { episode_number: 1, title: 'System', overview: 'Carmy tries to modernize The Original Beef of Chicagoland despite resistance from his late brother\'s best friend Richie.', runtime: 30, air_date: '2022-06-23', still_path: 'https://image.tmdb.org/t/p/w500/BearBackdrop.jpg', stream_url: SAMPLE_STREAMS[2] },
-          { episode_number: 2, title: 'Hands', overview: 'Carmy brings in Sydney to help re-organize the kitchen workflow using the Brigade de Cuisine method.', runtime: 28, air_date: '2022-06-23', still_path: 'https://image.tmdb.org/t/p/w500/1XS1oqL89v2Ukko83C9R28ByA30.jpg', stream_url: SAMPLE_STREAMS[3] }
+          { episode_number: 1, title: 'System', overview: 'Carmy tries to modernize The Original Beef of Chicagoland despite resistance from his late brother\'s best friend Richie.', runtime: 30, air_date: '2022-06-23', still_path: 'https://image.tmdb.org/t/p/w500/BearBackdrop.jpg' },
+          { episode_number: 2, title: 'Hands', overview: 'Carmy brings in Sydney to help re-organize the kitchen workflow using the Brigade de Cuisine method.', runtime: 28, air_date: '2022-06-23', still_path: 'https://image.tmdb.org/t/p/w500/1XS1oqL89v2Ukko83C9R28ByA30.jpg' }
         ]
       }
     ]
@@ -221,7 +218,6 @@ const OFFLINE_MEDIA_DATABASE = [
       { id: 2524, name: 'Colin Farrell', character: 'Oswald Cobblepot / Penguin' }
     ],
     trailer_key: 'mqqft2x_Aa4',
-    stream_url: SAMPLE_STREAMS[3],
     match_score: 96,
     age_rating: 'PG-13',
     badge: 'DC COMICS'
@@ -253,7 +249,6 @@ const OFFLINE_MEDIA_DATABASE = [
       { id: 8210, name: 'Jessica Chastain', character: 'Murphy Cooper' }
     ],
     trailer_key: 'zSWdZVtXT7E',
-    stream_url: SAMPLE_STREAMS[0],
     match_score: 99,
     age_rating: 'PG-13',
     badge: '4K ULTRA HD'
@@ -285,7 +280,6 @@ const OFFLINE_MEDIA_DATABASE = [
       { id: 93292, name: 'Rebecca Ferguson', character: 'Lady Jessica' }
     ],
     trailer_key: 'Way9Dexny3w',
-    stream_url: SAMPLE_STREAMS[4],
     match_score: 99,
     age_rating: 'PG-13',
     badge: 'MAX ORIGINAL'
@@ -316,7 +310,6 @@ const OFFLINE_MEDIA_DATABASE = [
       { id: 1444929, name: 'Finn Wolfhard', character: 'Mike Wheeler' }
     ],
     trailer_key: 'b9EkMc79ZSU',
-    stream_url: SAMPLE_STREAMS[5],
     match_score: 97,
     age_rating: 'TV-14',
     badge: 'EXCLUSIVE',
@@ -326,8 +319,8 @@ const OFFLINE_MEDIA_DATABASE = [
         name: 'Season 1',
         episode_count: 8,
         episodes: [
-          { episode_number: 1, title: 'Chapter One: The Vanishing of Will Byers', overview: 'On his way home from a friend\'s house, young Will sees something terrifying.', runtime: 48, air_date: '2016-07-15', still_path: 'https://image.tmdb.org/t/p/w500/562232S3p3.jpg', stream_url: SAMPLE_STREAMS[5] },
-          { episode_number: 2, title: 'Chapter Two: The Weirdo on Maple Street', overview: 'Lucas, Mike and Dustin try to talk to the girl they found in the woods.', runtime: 55, air_date: '2016-07-15', still_path: 'https://image.tmdb.org/t/p/w500/pbrL136mYgK5eB3Sbf9sYx4dO5m.jpg', stream_url: SAMPLE_STREAMS[6] }
+          { episode_number: 1, title: 'Chapter One: The Vanishing of Will Byers', overview: 'On his way home from a friend\'s house, young Will sees something terrifying.', runtime: 48, air_date: '2016-07-15', still_path: 'https://image.tmdb.org/t/p/w500/562232S3p3.jpg' },
+          { episode_number: 2, title: 'Chapter Two: The Weirdo on Maple Street', overview: 'Lucas, Mike and Dustin try to talk to the girl they found in the woods.', runtime: 55, air_date: '2016-07-15', still_path: 'https://image.tmdb.org/t/p/w500/pbrL136mYgK5eB3Sbf9sYx4dO5m.jpg' }
         ]
       }
     ]
@@ -357,7 +350,6 @@ const OFFLINE_MEDIA_DATABASE = [
       { id: 2283134, name: 'Bella Ramsey', character: 'Ellie Williams' }
     ],
     trailer_key: 'uLtkt8BonwM',
-    stream_url: SAMPLE_STREAMS[6],
     match_score: 98,
     age_rating: 'TV-MA',
     badge: 'HBO ORIGINAL',
@@ -367,7 +359,7 @@ const OFFLINE_MEDIA_DATABASE = [
         name: 'Season 1',
         episode_count: 9,
         episodes: [
-          { episode_number: 1, title: 'When You\'re Lost in the Darkness', overview: 'Twenty years after a fungal outbreak ravages the planet, Joel and Tess take on a mission.', runtime: 81, air_date: '2023-01-15', still_path: 'https://image.tmdb.org/t/p/w500/u3bZgnP93pBack.jpg', stream_url: SAMPLE_STREAMS[6] }
+          { episode_number: 1, title: 'When You\'re Lost in the Darkness', overview: 'Twenty years after a fungal outbreak ravages the planet, Joel and Tess take on a mission.', runtime: 81, air_date: '2023-01-15', still_path: 'https://image.tmdb.org/t/p/w500/u3bZgnP93pBack.jpg' }
         ]
       }
     ]
@@ -399,7 +391,6 @@ const OFFLINE_MEDIA_DATABASE = [
       { id: 1892, name: 'Matt Damon', character: 'Leslie Groves' }
     ],
     trailer_key: 'uYPbbksJxIg',
-    stream_url: SAMPLE_STREAMS[7],
     match_score: 97,
     age_rating: 'R',
     badge: 'ACADEMY AWARD WINNER'
@@ -571,7 +562,7 @@ export class MediaAPI {
       overview: 'Experience this title in ultra-high resolution with spatial audio.',
       poster_path: null,
       backdrop_path: null,
-      stream_url: SAMPLE_STREAMS[0]
+      stream_url: null
     };
   }
 
@@ -592,7 +583,6 @@ export class MediaAPI {
           runtime: ep.runtime || 50,
           still_path: ep.still_path ? this.getImageUrl(ep.still_path, 'w500') : 'https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=500&q=80',
           air_date: ep.air_date || '2023-01-01',
-          stream_url: SAMPLE_STREAMS[idx % SAMPLE_STREAMS.length],
           skip_intro: { start: 10, end: 75 },
           skip_credits: { start: (ep.runtime || 50) * 60 - 120, end: (ep.runtime || 50) * 60 }
         }))
@@ -617,7 +607,6 @@ export class MediaAPI {
         runtime: 48,
         still_path: 'https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=500&q=80',
         air_date: '2023-05-12',
-        stream_url: SAMPLE_STREAMS[idx % SAMPLE_STREAMS.length],
         skip_intro: { start: 10, end: 70 },
         skip_credits: { start: 2800, end: 2880 }
       }))
@@ -710,7 +699,7 @@ export class MediaAPI {
       release_date: releaseDate,
       year: releaseDate.substring(0, 4) || '2024',
       genres: item.genres || [],
-      stream_url: SAMPLE_STREAMS[streamIndex],
+      stream_url: item.stream_url || null,
       match_score: Math.min(99, Math.max(82, Math.round((item.vote_average || 8.0) * 10 + 12))),
       badge: item.type === 'tv' ? 'MAX SERIES' : '4K ULTRA HD'
     };
